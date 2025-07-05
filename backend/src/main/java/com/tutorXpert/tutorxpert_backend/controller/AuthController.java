@@ -9,6 +9,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -37,15 +38,18 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Map<String, String> login(@RequestParam String email,
-                                     @RequestParam String password) {
-        User user = userMapper.selectOne(
-                new QueryWrapper<User>().eq("email", email)
-        );
+    public Map<String, Object> login(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        String password = payload.get("password");
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("email", email));
         if (user != null && encoder.matches(password, user.getHashedPassword())) {
             String token = jwtUtil.generateToken(email);
-            return Collections.singletonMap("token", token);
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", token);
+            response.put("user", user);
+            return response;
         }
         throw new RuntimeException("Invalid credentials");
     }
+
 }

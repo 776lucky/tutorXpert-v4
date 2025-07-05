@@ -11,14 +11,12 @@ export const AuthProvider = ({ children }) => {
       setUser(JSON.parse(storedUser));
     }
   }, []);
-
   const login = (userData, token) => {
     const profile = userData.profile || {};
     const role = userData.role?.toLowerCase() || "student";
 
-    // 通用结构（字段全保留，视角色决定是否有值）
     const enrichedUser = {
-      id: userData.id,
+      id: userData.id, // This might be undefined
       email: userData.email,
       role: role,
       userType: role,
@@ -35,8 +33,7 @@ export const AuthProvider = ({ children }) => {
 
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(enrichedUser));
-    localStorage.setItem("user_id", enrichedUser.id.toString());
-
+    localStorage.setItem("user_id", enrichedUser.id.toString()); // Error occurs here
     setUser(enrichedUser);
   };
 
