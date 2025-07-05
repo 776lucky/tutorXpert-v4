@@ -2,9 +2,11 @@
 package com.tutorXpert.tutorxpert_backend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.tutorXpert.tutorxpert_backend.domain.dto.UserLoginDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.User;
 import com.tutorXpert.tutorxpert_backend.mapper.UserMapper;
 import com.tutorXpert.tutorxpert_backend.security.JwtUtil;
+import org.springframework.beans.BeanUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,9 +46,11 @@ public class AuthController {
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("email", email));
         if (user != null && encoder.matches(password, user.getHashedPassword())) {
             String token = jwtUtil.generateToken(email);
+            UserLoginDTO dto = new UserLoginDTO();
+            BeanUtils.copyProperties(user, dto);  // PO 转 DTO
             Map<String, Object> response = new HashMap<>();
             response.put("token", token);
-            response.put("user", user);
+            response.put("user", dto);
             return response;
         }
         throw new RuntimeException("Invalid credentials");

@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
+
 
 const AuthContext = createContext();
 
@@ -7,10 +9,16 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
+    if (token) {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    }
   }, []);
+
+
   const login = (userData, token) => {
     const profile = userData.profile || {};
     const role = userData.role?.toLowerCase() || "student";
@@ -33,7 +41,9 @@ export const AuthProvider = ({ children }) => {
 
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(enrichedUser));
-    localStorage.setItem("user_id", enrichedUser.id.toString()); // Error occurs here
+    if (enrichedUser.id != null) {
+      localStorage.setItem("user_id", enrichedUser.id.toString());
+    }
     setUser(enrichedUser);
   };
 

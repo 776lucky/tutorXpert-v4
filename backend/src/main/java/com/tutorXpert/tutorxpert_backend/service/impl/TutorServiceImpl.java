@@ -5,6 +5,8 @@ import com.tutorXpert.tutorxpert_backend.mapper.TutorMapper;
 import com.tutorXpert.tutorxpert_backend.service.ITutorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -33,4 +35,11 @@ public class TutorServiceImpl implements ITutorService {
     public void deleteTutorById(Long id) {
         tutorMapper.deleteById(id);
     }
+
+    @Override
+    public List<Tutor> searchTutors(double north, double south, double east, double west) {
+        // TODO: 查询数据库中的家教，筛选在边界内的家教，暂时返回空列表或 mock 数据
+        return new ArrayList<>();  // 先用空列表占位，避免报错
+    }
+
 }

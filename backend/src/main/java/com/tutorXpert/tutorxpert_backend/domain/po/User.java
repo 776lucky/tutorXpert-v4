@@ -13,4 +13,7 @@ public class User {
     private String email;
     private String hashedPassword;
     private String role;
+    private Double lat;
+    private Double lng;
+    private String address;
 }

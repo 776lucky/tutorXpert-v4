@@ -8,4 +8,6 @@ public interface ITutorService {
     Tutor getTutorById(Long id);
     Tutor createTutor(Tutor tutor);
     void deleteTutorById(Long id);
+
+    List<Tutor> searchTutors(double north, double south, double east, double west);
 }

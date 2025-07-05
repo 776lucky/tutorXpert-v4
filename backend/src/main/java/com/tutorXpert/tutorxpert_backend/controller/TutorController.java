@@ -23,4 +23,14 @@ public class TutorController {
     public Tutor createTutor(@RequestBody Tutor tutor) {
         return tutorService.createTutor(tutor);
     }
+
+    @GetMapping("/search")
+    public List<Tutor> searchTutors(
+            @RequestParam double north,
+            @RequestParam double south,
+            @RequestParam double east,
+            @RequestParam double west) {
+        return tutorService.searchTutors(north, south, east, west);
+    }
+
 }
