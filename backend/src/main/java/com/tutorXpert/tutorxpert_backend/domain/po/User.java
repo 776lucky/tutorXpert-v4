@@ -1,23 +1,16 @@
 package com.tutorXpert.tutorxpert_backend.domain.po;
 
-
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Entity
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @TableName("users")
 public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @TableId(type = IdType.AUTO)
     private Long id;
-
     private String email;
-    private String password;
+    private String hashedPassword;
     private String role;
 }
