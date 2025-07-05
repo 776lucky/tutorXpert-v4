@@ -1,0 +1,21 @@
+server:
+  port: 8000
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/tutorXpert?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    username: root           # 改成你的本地数据库用户名
+    password: 493100  # 改成你的本地数据库密码
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update       # 自动建表/更新表结构（开发环境建议）
+    show-sql: true           # 控制台打印 SQL 语句
+    properties:
+      hibernate:
+        format_sql: true     # 格式化 SQL 日志（便于阅读）
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 打印 SQL，可选
