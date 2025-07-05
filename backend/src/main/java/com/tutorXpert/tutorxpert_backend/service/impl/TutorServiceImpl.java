@@ -1,12 +1,13 @@
 package com.tutorXpert.tutorxpert_backend.service.impl;
 
+import com.tutorXpert.tutorxpert_backend.domain.dto.TutorProfileSearchPageDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.Tutor;
 import com.tutorXpert.tutorxpert_backend.mapper.TutorMapper;
+import com.tutorXpert.tutorxpert_backend.mapper.UserMapper;
 import com.tutorXpert.tutorxpert_backend.service.ITutorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -14,6 +15,9 @@ public class TutorServiceImpl implements ITutorService {
 
     @Autowired
     private TutorMapper tutorMapper;
+
+    @Autowired
+    private UserMapper userMapper;  // ✅ 新增，用于地图家教搜索
 
     @Override
     public List<Tutor> getAllTutors() {
@@ -37,9 +41,9 @@ public class TutorServiceImpl implements ITutorService {
     }
 
     @Override
-    public List<Tutor> searchTutors(double north, double south, double east, double west) {
-        // TODO: 查询数据库中的家教，筛选在边界内的家教，暂时返回空列表或 mock 数据
-        return new ArrayList<>();  // 先用空列表占位，避免报错
+    public List<TutorProfileSearchPageDTO> searchTutors(double north, double south, double east, double west) {
+        // 调用 UserMapper 的联表查询
+        return userMapper.searchTutorProfiles(north, south, east, west);
     }
 
 }

@@ -100,6 +100,7 @@ const TutorsPage = () => {
     
   // ✅ 获取 tutor 数据并设置状态
   const fetchTutorsByBounds = async (bounds) => {
+    console.log("🌍 Received bounds in TutorsPage:", bounds);  // ✅ 加这个
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/tutors/search`, {
         params: bounds,

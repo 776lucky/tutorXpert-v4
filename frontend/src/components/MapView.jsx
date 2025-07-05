@@ -51,6 +51,7 @@ const MapEvents = ({ onBoundsChange }) => {
         west: sw.lng,
       };
       console.log("📦 地图边界变更触发，收到参数:", newBounds);
+
       onBoundsChange?.(newBounds);
     },
   });

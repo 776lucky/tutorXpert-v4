@@ -1,5 +1,6 @@
 package com.tutorXpert.tutorxpert_backend.service;
 
+import com.tutorXpert.tutorxpert_backend.domain.dto.TutorProfileSearchPageDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.Tutor;
 import java.util.List;
 
@@ -9,5 +10,6 @@ public interface ITutorService {
     Tutor createTutor(Tutor tutor);
     void deleteTutorById(Long id);
 
-    List<Tutor> searchTutors(double north, double south, double east, double west);
+    // ✅ 改为返回 DTO
+    List<TutorProfileSearchPageDTO> searchTutors(double north, double south, double east, double west);
 }
