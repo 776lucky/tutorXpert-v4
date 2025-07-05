@@ -1,5 +1,6 @@
 package com.tutorXpert.tutorxpert_backend.domain.po;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "task_applications")
+@TableName("task_applications")
 public class TaskApplication {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

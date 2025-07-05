@@ -1,6 +1,7 @@
 package com.tutorXpert.tutorxpert_backend.domain.po;
 
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "available_slots")
+@TableName("available_slots")
 public class AvailableSlot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

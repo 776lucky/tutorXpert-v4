@@ -1,5 +1,6 @@
 package com.tutorXpert.tutorxpert_backend.domain.po;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data                       // ✅ 自动生成 getter/setter/toString/equals/hashCode
 @NoArgsConstructor          // ✅ 无参构造器
 @AllArgsConstructor         // ✅ 全参构造器
-@Table(name = "tasks")
+@TableName("tasks")
 public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

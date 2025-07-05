@@ -1,5 +1,6 @@
 package com.tutorXpert.tutorxpert_backend.domain.po;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,7 +10,7 @@ import lombok.AllArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "tutors")
+@TableName("tutors")
 public class Tutor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
