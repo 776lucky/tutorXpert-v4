@@ -31,6 +31,7 @@
 			<version>2.5.0</version>
 		</dependency>
 
+
 		<!-- MyBatis-Plus Spring Boot 3 专用启动器 -->
 		<dependency>
 			<groupId>com.baomidou</groupId>

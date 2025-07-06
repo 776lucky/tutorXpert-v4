@@ -36,4 +36,21 @@ public class SecurityConfig {
         return http.build();
     }
 
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
+                        .anyRequest().authenticated()
+                )
+                .csrf(csrf -> csrf.disable())  // 禁用 CSRF
+                .httpBasic(httpBasic -> {});  // 新写法，空配置即可启用 basic auth（仅开发环境用）
+
+        return http.build();
+    }
+
 }

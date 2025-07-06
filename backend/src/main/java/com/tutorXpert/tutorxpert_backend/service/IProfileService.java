@@ -1,11 +1,7 @@
 package com.tutorXpert.tutorxpert_backend.service;
 
-import com.tutorXpert.tutorxpert_backend.domain.po.Profile;
-
-import java.util.List;
-
+import com.tutorXpert.tutorxpert_backend.domain.dto.ProfileDTO;
 
 public interface IProfileService {
-    List<Profile> getAllProfiles();
-    Profile createProfile(Profile profile);
+    ProfileDTO getProfileByUserId(int userId);
 }

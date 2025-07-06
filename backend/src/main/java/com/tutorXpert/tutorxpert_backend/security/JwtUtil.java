@@ -36,5 +36,21 @@ public class JwtUtil {
 
         return jwt.getPayload("username").toString();
     }
+
+
+    // 提取 userId
+    public Integer getUserIdFromToken(String token) {
+        JWT jwt = JWT.of(token).setKey(jwtConfig.getSecret().getBytes());
+        if (!jwt.verify()) {
+            throw new RuntimeException("Invalid JWT token");
+        }
+
+        Object userIdObj = jwt.getPayload("userId");
+        if (userIdObj == null) {
+            throw new RuntimeException("userId not found in token");
+        }
+
+        return Integer.parseInt(userIdObj.toString());
+    }
 }
 

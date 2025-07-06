@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @MapperScan("com.tutorXpert.tutorxpert_backend.mapper")
+
 public class TutorxpertBackendApplication {
 
 	public static void main(String[] args) {

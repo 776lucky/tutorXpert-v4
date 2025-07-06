@@ -13,6 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +36,7 @@ public class AuthController {
         this.tutorMapper = tutorMapper;
     }
 
-
+    @Operation(summary = "register", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/register")
     public Map<String, String> register(@RequestParam String email,
                                         @RequestParam String password,
@@ -58,6 +61,7 @@ public class AuthController {
         return Collections.singletonMap("message", "User registered successfully");
     }
 
+    @Operation(summary = "login", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody Map<String, String> payload) {
         String email = payload.get("email");
