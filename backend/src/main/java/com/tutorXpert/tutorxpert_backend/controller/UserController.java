@@ -57,34 +57,6 @@ public class UserController {
         return user;
     }
 
-    /**
-     * 【接口名称】地图区域用户搜索接口
-     * 【接口路径】GET /users/location
-     * 【接口说明】根据地图边界和角色，筛选指定区域内用户，用于地图附近搜索
-     * 【请求参数】
-     *   - role：用户角色（tutor/student）
-     *   - north, south, east, west：地图边界坐标
-     * 【是否需要登录】否（公共接口）
-     */
-    @GetMapping("/location")
-    public List<UserLocationDTO> searchUsersByLocation(
-            @RequestParam String role,
-            @RequestParam double north,
-            @RequestParam double south,
-            @RequestParam double east,
-            @RequestParam double west) {
-        List<User> users = userMapper.selectList(
-                new QueryWrapper<User>()
-                        .eq("role", role)
-                        .between("lat", south, north)
-                        .between("lng", west, east)
-        );
-        return users.stream().map(user -> {
-            UserLocationDTO dto = new UserLocationDTO();
-            BeanUtils.copyProperties(user, dto);
-            return dto;
-        }).collect(Collectors.toList());
-    }
 
     @Operation(summary = "Get My Profile", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/profile")

@@ -30,7 +30,11 @@ const ProfilePage = () => {
 
     const fetchProfile = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/profiles/${storedUser.id}`);
+        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/profile`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
         console.log("Fetched profile:", res.data);  // ✅ 添加这行
         setProfile(res.data);
       } catch (err) {

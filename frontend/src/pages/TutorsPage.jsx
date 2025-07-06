@@ -97,29 +97,27 @@ const TutorsPage = () => {
   useEffect(() => {
     filterTutors();
   }, [searchTerm, subjectFilter, ratingFilter, distanceFilter, userPosition, tutors]);
-    
-  // ✅ 获取 tutor 数据并设置状态
+
   const fetchTutorsByBounds = async (bounds) => {
-    console.log("🌍 Received bounds in TutorsPage:", bounds);  // ✅ 加这个
+    console.log("🌍 Received bounds in TutorsPage:", bounds);
+    setIsLoading(true);
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/tutors/search`, {
-        params: bounds,
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/map/users`, {
+        params: {
+          role: "tutor",
+          ...bounds,
+        },
       });
       console.log("📨 Tutor response:", res.data);
-
       setTutors(res.data);
       setFilteredTutors(res.data);  // 默认显示全部
-      setIsLoading(false);
     } catch (err) {
-      console.error("❌ Tutor fetch error:", err);
-      toast({
-        title: "Failed to load tutors",
-        description: "Please check your connection or try again.",
-        variant: "destructive",
-      });
+      console.error("Map Filter Error:", err);
+    } finally {
       setIsLoading(false);
     }
   };
+
 
 
   const filterTutors = () => {
