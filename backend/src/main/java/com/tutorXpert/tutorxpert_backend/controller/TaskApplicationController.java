@@ -33,4 +33,10 @@ public class TaskApplicationController {
     public void deleteApplication(@PathVariable Long id) {
         taskApplicationService.deleteApplicationById(id);
     }
+
+    @GetMapping("/my_applications")
+    public List<TaskApplication> getMyApplications(@RequestParam Long tutorId) {
+        return taskApplicationService.getApplicationsByTutorId(tutorId);
+    }
+
 }

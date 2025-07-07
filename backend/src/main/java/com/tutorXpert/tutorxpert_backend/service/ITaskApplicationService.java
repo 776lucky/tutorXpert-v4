@@ -9,4 +9,6 @@ public interface ITaskApplicationService {
     TaskApplication getApplicationById(Long id);
     TaskApplication apply(TaskApplication application);
     void deleteApplicationById(Long id);
+
+    List<TaskApplication> getApplicationsByTutorId(Long tutorId);
 }

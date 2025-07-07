@@ -41,29 +41,47 @@ const EditProfilePage = () => {
     };
 
     const handleSave = async () => {
-        try {
-            const payload = {
-                bio: formData.bio,
-                expertise: formData.expertise,
-                hourly_rate: formData.hourlyRate,
-                education_level: formData.educationLevel,
-                phone_number: formData.phoneNumber,
-                address: formData.address,
-            };
+        const auth = JSON.parse(localStorage.getItem("auth") || "{}");
+        if (!auth.token) {
+            console.error("No token found, please login again.");
+            return;
+        }
 
+        const payload = {
+            bio: formData.bio,
+            expertise: formData.expertise,
+            hourlyRate: formData.hourlyRate,
+            phoneNumber: formData.phoneNumber,
+            educationLevel: formData.educationLevel,
+            address: formData.address,
+            subjects: Array.isArray(formData.subjects)
+                ? formData.subjects.join(",")
+                : formData.subjects ?? "",
+        };
+
+        try {
             await axios.put(`${import.meta.env.VITE_API_BASE_URL}/users/profile`, payload, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
+                headers: { Authorization: `Bearer ${auth.token}` },
             });
 
-            toast({ title: "Saved successfully!", duration: 2000 });
-            navigate("/dashboard/profile");
+            toast({
+                title: "Edited successfully!",
+                duration: 2000,
+                className: "bg-green-500 text-white shadow-md",
+            });
+
+            const updatedProfile = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/profile`, {
+                headers: { Authorization: `Bearer ${auth.token}` },
+            });
+            localStorage.setItem("profile", JSON.stringify(updatedProfile.data));
+
+            navigate("/dashboard/profile");  // ✅ 保存后跳转
         } catch (err) {
-            console.error("Failed to update profile", err);
-            toast({ title: "Save failed", variant: "destructive" });
+            console.error("Failed to save profile:", err);
         }
     };
+
+
 
     return (
         <div className="p-6">

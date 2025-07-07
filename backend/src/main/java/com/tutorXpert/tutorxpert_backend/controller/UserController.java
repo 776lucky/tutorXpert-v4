@@ -2,6 +2,7 @@
 package com.tutorXpert.tutorxpert_backend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.tutorXpert.tutorxpert_backend.domain.dto.ProfileEditDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.UserLocationDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.Profile;
 import com.tutorXpert.tutorxpert_backend.domain.po.Tutor;
@@ -72,6 +73,7 @@ public class UserController {
             throw new RuntimeException("Invalid token");
         }
 
+
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("email", email));
         if (user == null) {
             throw new RuntimeException("User not found");
@@ -91,11 +93,10 @@ public class UserController {
         return response;
     }
 
-
     @PutMapping("/profile")
     @Operation(summary = "Update My Profile", security = @SecurityRequirement(name = "bearerAuth"))
     public Object updateMyProfile(@RequestHeader("Authorization") String token,
-                                  @RequestBody Map<String, Object> payload) {
+                                  @RequestBody ProfileEditDTO payload) {
         token = token.replace("Bearer ", "");
         String email = jwtUtil.validateToken(token);
         if (email == null) {
@@ -107,19 +108,17 @@ public class UserController {
             throw new RuntimeException("User not found");
         }
 
-        // 更新 User（如果有需要）
-        if (payload.get("address") != null) {
-            user.setAddress((String) payload.get("address"));
+        if (payload.getAddress() != null) {
+            user.setAddress(payload.getAddress());
         }
         userMapper.updateById(user);
 
-        // 更新 Tutor 表（重点是 bio）
         if ("tutor".equals(user.getRole())) {
             Tutor tutor = tutorMapper.selectOne(new QueryWrapper<Tutor>().eq("user_id", user.getId()));
             if (tutor != null) {
-                if (payload.get("bio") != null) tutor.setBio((String) payload.get("bio"));
-                if (payload.get("expertise") != null) tutor.setExpertise((String) payload.get("expertise"));
-                if (payload.get("hourly_rate") != null) tutor.setHourlyRate((Integer) payload.get("hourly_rate"));
+                if (payload.getBio() != null) tutor.setBio(payload.getBio());
+                if (payload.getExpertise() != null) tutor.setExpertise(payload.getExpertise());
+                if (payload.getHourlyRate() != null) tutor.setHourlyRate(payload.getHourlyRate());
                 tutorMapper.updateById(tutor);
             }
         }
@@ -127,29 +126,22 @@ public class UserController {
         Profile profile = profileMapper.selectOne(
                 new QueryWrapper<Profile>().eq("user_id", user.getId())
         );
-
         if (profile == null) {
-            // 第一次访问：先插入一条空的 profile
             profile = new Profile();
             profile.setUserId(user.getId());
             profileMapper.insert(profile);
         }
 
-        // 到这里 profile 一定不为 null，直接更新即可
-        if (payload.get("address") != null)      profile.setAddress((String) payload.get("address"));
-        if (payload.get("education_level") != null) profile.setEducationLevel((String) payload.get("education_level"));
-        if (payload.get("phone_number") != null)   profile.setPhoneNumber((String) payload.get("phone_number"));
-
+        if (payload.getAddress() != null) profile.setAddress(payload.getAddress());
+        if (payload.getEducationLevel() != null) profile.setEducationLevel(payload.getEducationLevel());
+        if (payload.getPhoneNumber() != null) profile.setPhoneNumber(payload.getPhoneNumber());
         profileMapper.updateById(profile);
-        Tutor tutor = tutorMapper.selectOne(new QueryWrapper<Tutor>().eq("user_id", user.getId()));
 
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Profile updated successfully");
         response.put("user", user);
-        response.put("tutor", tutor);
+        response.put("tutor", tutorMapper.selectOne(new QueryWrapper<Tutor>().eq("user_id", user.getId())));
         response.put("profile", profile);
         return response;
     }
-
-
 }

@@ -80,17 +80,16 @@ const ProfilePage = () => {
   };
 
   const handleSave = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
+    const auth = JSON.parse(localStorage.getItem("auth") || "{}");
+    if (!auth.token) {
       console.error("No token found, please login again.");
       setFetchError("Authentication token missing. Please log in again.");
       setIsLoading(false);
       return;
     }
+
     const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/profile`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${auth.token}` },
     });
 
     const payload = {
@@ -101,11 +100,8 @@ const ProfilePage = () => {
     };
 
     try {
-      // ✅ 提交修改
       await axios.put(`${import.meta.env.VITE_API_BASE_URL}/users/profile`, payload, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        headers: { Authorization: `Bearer ${auth.token}` },
       });
 
       setIsEditing(false);
@@ -115,24 +111,16 @@ const ProfilePage = () => {
         className: "bg-green-500 text-white shadow-md",
       });
 
-      // ✅ 保存成功后自动刷新最新数据
-      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/profile`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+      const updatedProfile = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/profile`, {
+        headers: { Authorization: `Bearer ${auth.token}` },
       });
-      setProfile(res.data);
-      localStorage.setItem("user_profile", JSON.stringify(res.data));  // ✅ 放这里
-
+      setProfile(updatedProfile.data);
+      localStorage.setItem("profile", JSON.stringify(updatedProfile.data));  // ✅ 存 profile
     } catch (err) {
-      console.error("Failed to update profile", err);
-      toast({
-        title: "Update failed",
-        description: "Please check your form and try again.",
-        variant: "destructive",
-      });
+      console.error("Failed to save profile:", err);
     }
   };
+
 
 
 

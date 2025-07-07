@@ -1,5 +1,6 @@
 package com.tutorXpert.tutorxpert_backend.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tutorXpert.tutorxpert_backend.domain.po.TaskApplication;
 import com.tutorXpert.tutorxpert_backend.mapper.TaskApplicationMapper;
 import com.tutorXpert.tutorxpert_backend.service.ITaskApplicationService;
@@ -34,4 +35,12 @@ public class TaskApplicationServiceImpl implements ITaskApplicationService {
     public void deleteApplicationById(Long id) {
         taskApplicationMapper.deleteById(id);
     }
+
+    @Override
+    public List<TaskApplication> getApplicationsByTutorId(Long tutorId) {
+        return taskApplicationMapper.selectList(
+                new QueryWrapper<TaskApplication>().eq("tutor_id", tutorId)
+        );
+    }
+
 }

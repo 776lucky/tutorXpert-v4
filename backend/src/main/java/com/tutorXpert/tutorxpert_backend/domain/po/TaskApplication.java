@@ -15,7 +15,7 @@ public class TaskApplication {
     private Long id;
     private Long taskId;
     private Long tutorId;
-    private Double bidAmount;
+    private Integer bidAmount;
     private String message;
     private LocalDateTime appliedAt;
     private String status;  // e.g., "Pending", "Accepted", "Rejected"

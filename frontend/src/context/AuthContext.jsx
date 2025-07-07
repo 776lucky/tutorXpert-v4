@@ -23,41 +23,39 @@ export const AuthProvider = ({ children }) => {
     const profile = userData.profile || {};
     const role = userData.role?.toLowerCase() || "student";
 
-    const enrichedUser = {
-      id: userData.id, // This might be undefined
-      email: userData.email,
-      role: role,
-      userType: role,
-      fullName: `${profile.first_name || ""} ${profile.last_name || ""}`.trim(),
-      avatarUrl: profile.avatar_url || null,
-      subjects: profile.subjects || [],
-      hourlyRate: profile.hourly_rate || null,
-      lat: profile.lat ?? null,
-      lng: profile.lng ?? null,
-      address: profile.address || "",
-      isLoggedIn: true,
+    const authData = {
       token: token,
+      userId: userData.id,
+      role: role,
+      isLoggedIn: true,
     };
 
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(enrichedUser));
-    if (enrichedUser.id != null) {
-      localStorage.setItem("user_id", enrichedUser.id.toString());
-    }
-    setUser(enrichedUser);
+    localStorage.setItem("auth", JSON.stringify(authData));  // ✅ 只存 auth
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    setUser(authData);
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("user_id");
+    localStorage.removeItem("auth");    // ✅ 只清 auth
+    localStorage.removeItem("profile"); // ✅ 清除 profile（保持干净）
 
-    // 可选：清除额外缓存字段
+    // 清除其他缓存字段（保持你的逻辑）
     localStorage.removeItem("selectedSlot");
     localStorage.removeItem("draftMessage");
 
     setUser(null);
   };
+
+// 初始化逻辑也改成统一读取 auth
+  useEffect(() => {
+    const storedAuth = localStorage.getItem("auth");
+    if (storedAuth) {
+      const authData = JSON.parse(storedAuth);
+      setUser(authData);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${authData.token}`;
+    }
+  }, []);
+
 
   const isAuthenticated = !!user;
 

@@ -23,7 +23,7 @@ mybatis-plus:
 jwt:
   enabled: false
   secret: qwer1234
-  expiration: 3600000  # 单位：毫秒（这里是1小时）
+  expiration: 3600000000  # 单位：毫秒（这里是1000小时）
   public-urls:
     - /login
     - /swagger-ui.html

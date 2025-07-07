@@ -78,7 +78,7 @@ const TasksPage = () => {
       const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/task_applications`, {
         task_id: task.id,
         tutor_id: user.id,
-        bid_amount: parseFloat(bidAmount),
+        bid_amount: parseInt(bidAmount),
       });
       toast({
         title: "Application Submitted",

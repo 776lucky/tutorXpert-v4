@@ -12,7 +12,10 @@ const TutorApplyProjectPage = () => {
   const { toast } = useToast();
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const tutorId = user.id;
+  const tutorProfile = JSON.parse(localStorage.getItem("user_profile") || "{}");
+  const tutorId = tutorProfile.tutor?.id;  // ✅ 正确获取 tutor_id
+
+  console.log("tutorId:", tutorId);
 
   const [task, setTask] = useState(null);
   const [bidAmount, setBidAmount] = useState("");
@@ -27,12 +30,14 @@ const TutorApplyProjectPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/task_applications`, {
-        task_id: parseInt(taskId),
-        tutor_id: tutorId,
-        bid_amount: parseFloat(bidAmount),
-        message,
+      console.log("tutorId:", tutorId);  // ✅ 这里加打印
+
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/tasks/${taskId}/applications`, {
+        tutorId: tutorId,            // ✅ 正确
+        bidAmount: parseInt(bidAmount),  // ✅ 正确，建议用 parseFloat 保留小数
+        message: message,
       });
+
       toast({
         title: "Application submitted successfully",
         description: `You bid $${bidAmount} for "${task.title}"`,

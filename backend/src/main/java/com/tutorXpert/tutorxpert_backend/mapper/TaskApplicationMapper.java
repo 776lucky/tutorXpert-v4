@@ -3,8 +3,8 @@ package com.tutorXpert.tutorxpert_backend.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.tutorXpert.tutorxpert_backend.domain.po.TaskApplication;
 import org.apache.ibatis.annotations.Mapper;
+import org.springframework.stereotype.Repository;
 
 @Mapper
-public interface TaskApplicationMapper extends BaseMapper<TaskApplication> {
-}
+public interface TaskApplicationMapper extends BaseMapper<TaskApplication> {}
 
