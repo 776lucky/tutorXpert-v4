@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"; // ✅ 加在顶部
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import AddressAutoComplete from "@/components/AddressAutoComplete";
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -20,6 +21,7 @@ const ProfilePage = () => {
 
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
   const isTutor = storedUser?.role === "tutor";
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!storedUser?.id) {
@@ -29,6 +31,18 @@ const ProfilePage = () => {
     }
 
     const fetchProfile = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found, please login again.");
+        setFetchError("Authentication token missing. Please log in again.");
+        setIsLoading(false);
+        return;
+      }
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       try {
         const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/profile`, {
           headers: {
@@ -66,47 +80,50 @@ const ProfilePage = () => {
   };
 
   const handleSave = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("No token found, please login again.");
+      setFetchError("Authentication token missing. Please log in again.");
+      setIsLoading(false);
+      return;
+    }
+    const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/profile`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
     const payload = {
       ...formData,
       subjects: Array.isArray(formData.subjects)
-        ? formData.subjects.join(",")
-        : formData.subjects ?? "",
+          ? formData.subjects.join(",")
+          : formData.subjects ?? "",
     };
-  
+
     try {
+      // ✅ 提交修改
       await axios.put(`${import.meta.env.VITE_API_BASE_URL}/users/profile`, payload, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      setProfile(payload);
+
       setIsEditing(false);
-  
-      // ✅ 同步更新 localStorage 中的 user.profile
-      const stored = JSON.parse(localStorage.getItem("user"));
-      if (stored) {
-        stored.profile = {
-          ...stored.profile,
-          ...payload,
-        };
-      
-        // ✅ 顶层 user.lat/lng/address 同步更新
-        if (payload.lat && payload.lng) {
-          stored.lat = payload.lat;
-          stored.lng = payload.lng;
-        }
-        if (payload.address) {
-          stored.address = payload.address;
-        }
-      
-        localStorage.setItem("user", JSON.stringify(stored));
-      }
-  
       toast({
         title: "Edited successfully!",
         duration: 2000,
         className: "bg-green-500 text-white shadow-md",
       });
+
+      // ✅ 保存成功后自动刷新最新数据
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/profile`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      setProfile(res.data);
+      localStorage.setItem("user_profile", JSON.stringify(res.data));  // ✅ 放这里
+
     } catch (err) {
       console.error("Failed to update profile", err);
       toast({
@@ -116,8 +133,9 @@ const ProfilePage = () => {
       });
     }
   };
-  
-  
+
+
+
 
   const renderStudentProfile = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -246,28 +264,38 @@ const ProfilePage = () => {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-muted-foreground">Loading profile...</p>
+                <p>Loading...</p>
             ) : fetchError ? (
-              <p className="text-red-500">{fetchError}</p>
-            ) : isTutor ? (
-              renderTutorProfile()
+                <p>Error</p>
             ) : (
-              renderStudentProfile()
-            )}
+                <>
+                  {isEditing ? (
+                      renderTutorProfile()
+                  ) : (
+                      <div className="space-y-4">
+                        <div><strong>Bio:</strong> {profile.tutor.bio}</div>
+                        <div><strong>Expertise:</strong> {profile.tutor.expertise}</div>
+                        <div><strong>Hourly Rate:</strong> ${profile.tutor.hourlyRate}</div>
+                        <div><strong>Education Level:</strong> {profile.profile?.educationLevel || "—"}</div>
+                        <div><strong>Phone Number:</strong> {profile.profile?.phoneNumber || "—"}</div>
+                        <div><strong>Address:</strong> {profile.profile.address}</div>
+                      </div>
+                  )}
 
-            {!isLoading && !fetchError && (
-              <div className="mt-6 flex gap-4">
-                {isEditing ? (
-                  <>
-                    <Button onClick={handleSave}>Save</Button>
-                    <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
-                  </>
-                ) : (
-                  <Button onClick={() => setIsEditing(true)}>Edit Profile</Button>
-                )}
-              </div>
+                  <div className="mt-6 flex gap-4">
+                    {isEditing ? (
+                        <>
+                          <Button onClick={handleSave}>Save</Button>
+                          <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
+                        </>
+                    ) : (
+                        <Button onClick={() => navigate("/dashboard/edit-profile")}>Edit Profile</Button>
+                    )}
+                  </div>
+                </>
             )}
           </CardContent>
+
         </Card>
       </motion.div>
     </div>

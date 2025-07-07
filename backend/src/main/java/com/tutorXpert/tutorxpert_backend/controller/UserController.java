@@ -63,9 +63,8 @@ public class UserController {
         return user;
     }
 
-
-    @Operation(summary = "Get My Profile", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/profile")
+    @Operation(summary = "Get My Profile", security = @SecurityRequirement(name = "bearerAuth"))
     public Object getMyProfile(@RequestHeader("Authorization") String token) {
         token = token.replace("Bearer ", "");
         String email = jwtUtil.validateToken(token);
@@ -78,16 +77,20 @@ public class UserController {
             throw new RuntimeException("User not found");
         }
 
-        Map<String, Object> profile = new HashMap<>();
-        profile.put("user", user);
+        // 准备返回数据
+        Map<String, Object> response = new HashMap<>();
+        response.put("user", user);
 
-        if ("tutor".equals(user.getRole())) {
-            Tutor tutor = tutorMapper.selectOne(new QueryWrapper<Tutor>().eq("user_id", user.getId()));
-            profile.put("tutor", tutor);
-        }
+        // 🔧 修复：无论什么角色都查询 tutor，但只有 tutor 角色才有数据
+        Tutor tutor = tutorMapper.selectOne(new QueryWrapper<Tutor>().eq("user_id", user.getId()));
+        response.put("tutor", tutor);  // 对于 student 用户，这里会是 null
 
-        return profile;
+        Profile profile = profileMapper.selectOne(new QueryWrapper<Profile>().eq("user_id", user.getId()));
+        response.put("profile", profile);
+
+        return response;
     }
+
 
     @PutMapping("/profile")
     @Operation(summary = "Update My Profile", security = @SecurityRequirement(name = "bearerAuth"))
@@ -121,15 +124,31 @@ public class UserController {
             }
         }
 
-        Profile profile = profileMapper.selectOne(new QueryWrapper<Profile>().eq("user_id", user.getId()));
-        if (profile != null) {
-            if (payload.get("address") != null) profile.setAddress((String) payload.get("address"));
-            if (payload.get("education_level") != null) profile.setEducationLevel((String) payload.get("education_level"));
-            if (payload.get("phone_number") != null) profile.setPhoneNumber((String) payload.get("phone_number"));
-            profileMapper.updateById(profile);
+        Profile profile = profileMapper.selectOne(
+                new QueryWrapper<Profile>().eq("user_id", user.getId())
+        );
+
+        if (profile == null) {
+            // 第一次访问：先插入一条空的 profile
+            profile = new Profile();
+            profile.setUserId(user.getId());
+            profileMapper.insert(profile);
         }
 
-        return Map.of("message", "Profile updated successfully");
+        // 到这里 profile 一定不为 null，直接更新即可
+        if (payload.get("address") != null)      profile.setAddress((String) payload.get("address"));
+        if (payload.get("education_level") != null) profile.setEducationLevel((String) payload.get("education_level"));
+        if (payload.get("phone_number") != null)   profile.setPhoneNumber((String) payload.get("phone_number"));
+
+        profileMapper.updateById(profile);
+        Tutor tutor = tutorMapper.selectOne(new QueryWrapper<Tutor>().eq("user_id", user.getId()));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Profile updated successfully");
+        response.put("user", user);
+        response.put("tutor", tutor);
+        response.put("profile", profile);
+        return response;
     }
 
 

@@ -22,6 +22,8 @@ import MyMessagesPage from "@/pages/dashboard/MyMessagesPage";
 import MyBidsPage from "@/pages/dashboard/MyBidsPage";
 import MyListingsPage from "@/pages/dashboard/MyListingsPage";
 import MyAppointmentsPage from "@/pages/dashboard/MyAppointmentsPage";
+import EditProfilePage from "@/pages/dashboard/EditProfilePage.jsx";
+
 // import PayPage from "@/pages/PayPage";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import NotFoundPage from "@/pages/NotFoundPage";
@@ -67,6 +69,7 @@ const App = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/test-dialog" element={<TestDialog />} />
+            <Route path="/dashboard/edit-profile" element={<EditProfilePage />} />
 
             {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>
