@@ -11,9 +11,7 @@ const TutorApplyProjectPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const tutorProfile = JSON.parse(localStorage.getItem("user_profile") || "{}");
-  const tutorId = tutorProfile.tutor?.id;  // ✅ 正确获取 tutor_id
+  const tutorId = JSON.parse(localStorage.getItem("tutor_id"));
 
   console.log("tutorId:", tutorId);
 
