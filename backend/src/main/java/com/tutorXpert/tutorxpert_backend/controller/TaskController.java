@@ -5,7 +5,9 @@ import com.tutorXpert.tutorxpert_backend.service.ITaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/tasks")
@@ -57,5 +59,22 @@ public class TaskController {
     @PatchMapping("/{task_id:\\d+}/status")
     public Task updateTaskStatus(@PathVariable("task_id") Long taskId, @RequestBody Task task) {
         return taskService.updateTaskStatus(taskId, task);
+    }
+
+    /** 地图筛选任务 */
+    @GetMapping("/search")
+    public List<Task> searchTasksByLocation(
+            @RequestParam double minLat,
+            @RequestParam double maxLat,
+            @RequestParam double minLng,
+            @RequestParam double maxLng
+    ) {
+        return taskService.searchTasksByLocation(minLat, maxLat, minLng, maxLng);
+    }
+
+
+    @GetMapping("/my_applications")
+    public List<Map<String, Object>> getMyApplications(@RequestParam("tutor_id") Long tutorId) {
+        return new ArrayList<>();  // 假数据，防止报错
     }
 }

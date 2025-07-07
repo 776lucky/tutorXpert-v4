@@ -67,4 +67,10 @@ public class TaskServiceImpl implements ITaskService {
         taskMapper.updateById(task);
         return task;
     }
+
+    @Override
+    public List<Task> searchTasksByLocation(double minLat, double maxLat, double minLng, double maxLng) {
+        return taskMapper.selectTasksWithinBounds(minLat, maxLat, minLng, maxLng);
+    }
+
 }

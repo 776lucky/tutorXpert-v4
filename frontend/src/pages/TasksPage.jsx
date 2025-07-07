@@ -44,11 +44,16 @@ const TasksPage = () => {
   const { id } = useParams();
   const { toast } = useToast();
   const [appliedTaskIds, setAppliedTaskIds] = useState(new Set()); // 记录已申请任务
-  
+
   const fetchTasksByBounds = async (bounds) => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/tasks/search`, {
-        params: bounds,
+        params: {
+          minLat: bounds.south,
+          maxLat: bounds.north,
+          minLng: bounds.west,
+          maxLng: bounds.east,
+        },
       });
       setTasks(res.data);
       setFilteredTasks(res.data);
@@ -212,6 +217,10 @@ const TasksPage = () => {
   const handleDistanceFilter = setDistanceFilter;
 
   const scrollToCard = (taskId) => {
+    // ✅ 新增：点击时加载详情
+    handleViewTaskDetails(taskId);
+
+    // ✅ 原有滚动逻辑保留
     const target = taskRefs.current[taskId];
     if (target) {
       const scrollY = window.scrollY;

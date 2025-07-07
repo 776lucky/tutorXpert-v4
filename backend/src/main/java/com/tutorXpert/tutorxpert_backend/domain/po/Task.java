@@ -18,4 +18,6 @@ public class Task {
     private String description;
     private String budget;
     private String deadline;
+    private Double lat;
+    private Double lng;
 }

@@ -21,4 +21,6 @@ public interface ITaskService {
     Object reviewApplication(Long taskId, Long applicationId, Object decisionPayload);
 
     Task updateTaskStatus(Long taskId, Task task);
+
+    List<Task> searchTasksByLocation(double minLat, double maxLat, double minLng, double maxLng);
 }
