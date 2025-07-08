@@ -5,8 +5,25 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Home, Star, Send, CreditCard, Briefcase, List, CalendarDays, User, Settings, PlusCircle, Search } from "lucide-react";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
 
 const DashboardPage = () => {
+
+  console.log("DashboardPage mounted");
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    console.log("Token:", token);
+
+    if (!token) {
+      navigate("/login");
+    }
+  }, []);
+
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },

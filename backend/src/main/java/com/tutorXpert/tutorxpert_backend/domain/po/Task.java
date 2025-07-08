@@ -16,7 +16,7 @@ public class Task {
     private String subject;
     private String address;
     private String description;
-    private String budget;
+    private Integer budget;
     private String deadline;
     private Double lat;
     private Double lng;

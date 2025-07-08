@@ -3,9 +3,7 @@ package com.tutorXpert.tutorxpert_backend.domain.dto;
 import lombok.Data;
 
 @Data
-public class UserLoginDTO {
-    private Long id;
+public class LoginRequestDTO {
     private String email;
-    private String role;
-    private String name;
+    private String password;
 }

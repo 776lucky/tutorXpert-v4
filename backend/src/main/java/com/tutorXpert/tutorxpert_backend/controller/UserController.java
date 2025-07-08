@@ -2,28 +2,21 @@
 package com.tutorXpert.tutorxpert_backend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.tutorXpert.tutorxpert_backend.domain.dto.ProfileEditDTO;
-import com.tutorXpert.tutorxpert_backend.domain.dto.UserLocationDTO;
-import com.tutorXpert.tutorxpert_backend.domain.po.Profile;
+import com.tutorXpert.tutorxpert_backend.domain.dto.ProfileUpdateDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.Tutor;
 import com.tutorXpert.tutorxpert_backend.domain.po.User;
-import com.tutorXpert.tutorxpert_backend.mapper.ProfileMapper;
+import com.tutorXpert.tutorxpert_backend.mapper.StudentMapper;
 import com.tutorXpert.tutorxpert_backend.mapper.TutorMapper;
 import com.tutorXpert.tutorxpert_backend.mapper.UserMapper;
 import com.tutorXpert.tutorxpert_backend.security.JwtUtil;
-import com.tutorXpert.tutorxpert_backend.service.IUserService;
-import com.tutorXpert.tutorxpert_backend.service.impl.ProfileServiceImpl;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import com.tutorXpert.tutorxpert_backend.domain.po.Student;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
@@ -31,72 +24,65 @@ public class UserController {
 
     private final UserMapper userMapper;
     private final TutorMapper tutorMapper;
+    private final StudentMapper studentMapper;
     private final JwtUtil jwtUtil;
-    private final ProfileMapper profileMapper;
-
-
-    @Autowired
-    public UserController(UserMapper userMapper, TutorMapper tutorMapper, JwtUtil jwtUtil, ProfileMapper profileMapper) {
-        this.userMapper = userMapper;
-        this.tutorMapper = tutorMapper;
-        this.jwtUtil = jwtUtil;
-        this.profileMapper = profileMapper;
-    }
-
-    @Autowired
-    private IUserService userService;
-
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    /** 查询所有用户 */
-    // @Operation(summary = "Get All Users", security = @SecurityRequirement(name = "bearerAuth"))
-    @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    @Autowired
+    public UserController(UserMapper userMapper, TutorMapper tutorMapper,
+                          StudentMapper studentMapper, JwtUtil jwtUtil) {
+        this.userMapper = userMapper;
+        this.tutorMapper = tutorMapper;
+        this.studentMapper = studentMapper;
+        this.jwtUtil = jwtUtil;
     }
 
-    /** 管理员创建新用户（需带 JWT） */
-    @Operation(summary = "Create User (Admin Only)", security = @SecurityRequirement(name = "bearerAuth"))
+    /** 查询所有用户 */
+    @GetMapping
+    public List<User> getAllUsers() {
+        return userMapper.selectList(null);
+    }
+
+    /** 管理员创建新用户 */
     @PostMapping
     public User createUser(@RequestBody User user) {
         user.setHashedPassword(encoder.encode(user.getHashedPassword()));
-        userService.createUser(user);
+        userMapper.insert(user);
         return user;
     }
 
+    /** 获取我的个人资料 */
     @GetMapping("/profile")
-    @Operation(summary = "Get My Profile", security = @SecurityRequirement(name = "bearerAuth"))
-    public Object getMyProfile(@RequestHeader("Authorization") String token) {
+    public Map<String, Object> getMyProfile(@RequestHeader("Authorization") String token) {
         token = token.replace("Bearer ", "");
         String email = jwtUtil.validateToken(token);
         if (email == null) {
             throw new RuntimeException("Invalid token");
         }
 
-
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("email", email));
         if (user == null) {
             throw new RuntimeException("User not found");
         }
 
-        // 准备返回数据
         Map<String, Object> response = new HashMap<>();
         response.put("user", user);
 
-        // 🔧 修复：无论什么角色都查询 tutor，但只有 tutor 角色才有数据
-        Tutor tutor = tutorMapper.selectOne(new QueryWrapper<Tutor>().eq("user_id", user.getId()));
-        response.put("tutor", tutor);  // 对于 student 用户，这里会是 null
-
-        Profile profile = profileMapper.selectOne(new QueryWrapper<Profile>().eq("user_id", user.getId()));
-        response.put("profile", profile);
+        if ("tutor".equals(user.getRole())) {
+            Tutor tutor = tutorMapper.selectOne(new QueryWrapper<Tutor>().eq("user_id", user.getId()));
+            response.put("tutor", tutor);
+        } else if ("student".equals(user.getRole())) {
+            Student student = studentMapper.selectOne(new QueryWrapper<Student>().eq("user_id", user.getId()));
+            response.put("student", student);
+        }
 
         return response;
     }
 
+    /** 修改我的个人资料 */
     @PutMapping("/profile")
-    @Operation(summary = "Update My Profile", security = @SecurityRequirement(name = "bearerAuth"))
-    public Object updateMyProfile(@RequestHeader("Authorization") String token,
-                                  @RequestBody ProfileEditDTO payload) {
+    public Map<String, Object> updateMyProfile(@RequestHeader("Authorization") String token,
+                                               @RequestBody ProfileUpdateDTO payload) {
         token = token.replace("Bearer ", "");
         String email = jwtUtil.validateToken(token);
         if (email == null) {
@@ -108,11 +94,13 @@ public class UserController {
             throw new RuntimeException("User not found");
         }
 
+        // 更新 UserPO
         if (payload.getAddress() != null) {
             user.setAddress(payload.getAddress());
         }
         userMapper.updateById(user);
 
+        // 更新 TutorPO 或 StudentPO
         if ("tutor".equals(user.getRole())) {
             Tutor tutor = tutorMapper.selectOne(new QueryWrapper<Tutor>().eq("user_id", user.getId()));
             if (tutor != null) {
@@ -121,27 +109,19 @@ public class UserController {
                 if (payload.getHourlyRate() != null) tutor.setHourlyRate(payload.getHourlyRate());
                 tutorMapper.updateById(tutor);
             }
+        } else if ("student".equals(user.getRole())) {
+            Student student = studentMapper.selectOne(new QueryWrapper<Student>().eq("user_id", user.getId()));
+            if (student != null) {
+                if (payload.getEducationLevel() != null) student.setEducationLevel(payload.getEducationLevel());
+                if (payload.getAddressArea() != null) student.setAddressArea(payload.getAddressArea());
+                if (payload.getBriefDescription() != null) student.setBriefDescription(payload.getBriefDescription());
+                studentMapper.updateById(student);
+            }
         }
-
-        Profile profile = profileMapper.selectOne(
-                new QueryWrapper<Profile>().eq("user_id", user.getId())
-        );
-        if (profile == null) {
-            profile = new Profile();
-            profile.setUserId(user.getId());
-            profileMapper.insert(profile);
-        }
-
-        if (payload.getAddress() != null) profile.setAddress(payload.getAddress());
-        if (payload.getEducationLevel() != null) profile.setEducationLevel(payload.getEducationLevel());
-        if (payload.getPhoneNumber() != null) profile.setPhoneNumber(payload.getPhoneNumber());
-        profileMapper.updateById(profile);
 
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Profile updated successfully");
         response.put("user", user);
-        response.put("tutor", tutorMapper.selectOne(new QueryWrapper<Tutor>().eq("user_id", user.getId())));
-        response.put("profile", profile);
         return response;
     }
 }

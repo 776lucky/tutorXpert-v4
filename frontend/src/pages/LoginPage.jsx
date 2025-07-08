@@ -4,6 +4,14 @@ import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 
 const LoginPage = () => {
+  const setAuthHeader = (token) => {
+    if (token) {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    } else {
+      delete axios.defaults.headers.common["Authorization"];
+    }
+  };
+
   const toast = (options) => {
     console[options.variant === "destructive" ? "error" : "log"](options.description);
   };
@@ -15,12 +23,16 @@ const LoginPage = () => {
 
   const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
+
+
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
+
+    const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -31,28 +43,25 @@ const LoginPage = () => {
     }
 
     try {
+      // 登录请求，绝对不带 token
       const response = await axios.post(
           `${baseUrl}/auth/login`,
           { email: formData.email, password: formData.password },
           { headers: { "Content-Type": "application/json" } }
       );
-      console.log("Response:", response.data);
-
       const token = response.data?.token;
-      if (!token) {
-        throw new Error("Login endpoint did not return a token");
-      }
-      const userData = response.data.user || { id: null, email: formData.email };
+      if (!token) throw new Error("Login endpoint did not return a token");
 
-      login(userData, String(token));
+      const user = response.data?.user;
+
+      // ✅ token, 设置authentication header
+      login(token, user);
 
       toast({ description: "Login successful!" });
       navigate("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
-      const message =
-          error.response?.data?.message || error.message || "Login failed, please try again.";
-      toast({ description: message, variant: "destructive" });
+      toast({ description: error.message || "Login failed", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
