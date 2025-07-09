@@ -1,6 +1,6 @@
 package com.tutorXpert.tutorxpert_backend.service;
 
-import com.tutorXpert.tutorxpert_backend.domain.dto.ProfileUpdateDTO;
+import com.tutorXpert.tutorxpert_backend.domain.dto.user.ProfileUpdateDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.Student;
 
 import java.util.List;

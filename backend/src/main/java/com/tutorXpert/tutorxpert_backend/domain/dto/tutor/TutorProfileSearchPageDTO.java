@@ -1,4 +1,4 @@
-package com.tutorXpert.tutorxpert_backend.domain.dto.user;
+package com.tutorXpert.tutorxpert_backend.domain.dto.tutor;
 
 import lombok.Data;
 

@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 
 @Data
 @TableName("tutors")
+
 public class Tutor {
     @TableId(type = IdType.AUTO)
     private Long id;

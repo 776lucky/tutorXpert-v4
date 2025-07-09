@@ -1,6 +1,6 @@
 package com.tutorXpert.tutorxpert_backend.controller;
 
-import com.tutorXpert.tutorxpert_backend.domain.dto.user.TutorProfileSearchPageDTO;
+import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorProfileSearchPageDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.Tutor;
 import com.tutorXpert.tutorxpert_backend.mapper.UserMapper;
 import com.tutorXpert.tutorxpert_backend.service.ITutorService;
@@ -27,7 +27,9 @@ public class TutorController {
         return tutorService.getAllTutors();
     }
 
-    /** 管理后台/测试：新增家教 */
+    /** 管理后台/测试：新增家教
+     * 结论：这个接口的作用是直接往 tutors 表插入家教数据，属于后台测试、数据初始化用途，不面向前台用户。
+     * */
     @Operation(summary = "新增家教（后台、测试用）")
     @PostMapping
     public Tutor createTutor(@RequestBody Tutor tutor) {

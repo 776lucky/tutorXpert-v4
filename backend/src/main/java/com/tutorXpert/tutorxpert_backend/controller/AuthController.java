@@ -2,7 +2,7 @@
 package com.tutorXpert.tutorxpert_backend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.tutorXpert.tutorxpert_backend.domain.dto.LoginRequestDTO;
+import com.tutorXpert.tutorxpert_backend.domain.dto.user.LoginRequestDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.user.UserLoginDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.Student;
 import com.tutorXpert.tutorxpert_backend.domain.po.Tutor;

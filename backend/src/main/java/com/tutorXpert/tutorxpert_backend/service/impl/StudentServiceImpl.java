@@ -1,7 +1,8 @@
 package com.tutorXpert.tutorxpert_backend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.tutorXpert.tutorxpert_backend.domain.dto.ProfileUpdateDTO;
+import com.tutorXpert.tutorxpert_backend.domain.dto.profile.StudentProfileUpdateDTO;
+import com.tutorXpert.tutorxpert_backend.domain.dto.user.ProfileUpdateDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.Student;
 import com.tutorXpert.tutorxpert_backend.mapper.StudentMapper;
 import com.tutorXpert.tutorxpert_backend.service.IStudentService;
@@ -45,10 +46,13 @@ public class StudentServiceImpl implements IStudentService {
             student.setUserId(userId);
         }
 
-        student.setEducationLevel(payload.getEducationLevel());
-        student.setSubjectNeed(payload.getSubjectNeed());
-        student.setAddressArea(payload.getAddressArea());
-        student.setBriefDescription(payload.getBriefDescription());
+        StudentProfileUpdateDTO s = payload.getStudentProfile();  // 先取子 DTO
+        if (s != null) {
+            student.setEducationLevel(s.getEducationLevel());
+            student.setSubjectNeed(s.getSubjectNeed());
+            student.setAddressArea(s.getAddressArea());
+            student.setBriefDescription(s.getBriefDescription());
+        }
 
         if (student.getId() == null) {
             studentMapper.insert(student);

@@ -20,5 +20,6 @@ public class Student {
     private String briefDescription;   // 简要描述（选填）
 
     public void setSubjectNeed(String subjectNeed) {
+
     }
 }

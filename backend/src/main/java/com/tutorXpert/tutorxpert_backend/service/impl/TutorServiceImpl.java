@@ -1,8 +1,9 @@
 package com.tutorXpert.tutorxpert_backend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.tutorXpert.tutorxpert_backend.domain.dto.ProfileUpdateDTO;
-import com.tutorXpert.tutorxpert_backend.domain.dto.user.TutorProfileSearchPageDTO;
+import com.tutorXpert.tutorxpert_backend.domain.dto.profile.TutorProfileUpdateDTO;
+import com.tutorXpert.tutorxpert_backend.domain.dto.user.ProfileUpdateDTO;
+import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorProfileSearchPageDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.Tutor;
 import com.tutorXpert.tutorxpert_backend.mapper.TutorMapper;
 import com.tutorXpert.tutorxpert_backend.mapper.UserMapper;
@@ -54,12 +55,14 @@ public class TutorServiceImpl implements ITutorService {
             tutor = new Tutor();
             tutor.setUserId(userId);
         }
-
-        tutor.setBio(payload.getBio());
-        tutor.setExpertise(payload.getExpertise());
-        tutor.setHourlyRate(payload.getHourlyRate());
-        tutor.setYearsOfExperience(payload.getYearsOfExperience());
-        tutor.setCertifications(payload.getCertifications());
+        TutorProfileUpdateDTO t = payload.getTutorProfile();  // 取子 DTO
+        if (t != null) {
+            tutor.setBio(t.getBio());
+            tutor.setExpertise(t.getExpertise());
+            tutor.setHourlyRate(t.getHourlyRate());
+            tutor.setYearsOfExperience(t.getYearsOfExperience());
+            tutor.setCertifications(t.getCertifications());
+        }
 
         if (tutor.getId() == null) {
             tutorMapper.insert(tutor);

@@ -1,26 +1,40 @@
 package com.tutorXpert.tutorxpert_backend.service;
 
-import com.tutorXpert.tutorxpert_backend.domain.po.Task;
+import com.tutorXpert.tutorxpert_backend.domain.dto.task.*;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ITaskService {
 
-    List<Task> getAllTasks();
+    /** 发布任务 */
+    TaskDTO createTask(TaskCreateDTO task);
 
-    Task getTaskById(Long id);
+    /** 获取我发布的任务 */
+    List<TaskDTO> getMyTasks();
 
-    Task createTask(Task task);
-
+    /** 删除任务 */
     void deleteTaskById(Long id);
 
-    List<Task> getMyTasks();
+    /** 获取任务详情 */
+    TaskDTO getTaskById(Long id);
 
-    List<Object> getApplicationsByTaskId(Long taskId);
+    /** 修改任务状态 */
+    TaskDTO updateTaskStatus(Long taskId, TaskStatusUpdateDTO task);
 
-    Object reviewApplication(Long taskId, Long applicationId, Object decisionPayload);
+    /** 地图筛选任务 */
+    List<TaskSearchDTO> searchTasksByLocation(double minLat, double maxLat, double minLng, double maxLng);
 
-    Task updateTaskStatus(Long taskId, Task task);
+    /** 获取任务申请列表 */
+    List<TaskApplicationDTO> getApplicationsByTaskId(Long taskId);
 
-    List<Task> searchTasksByLocation(double minLat, double maxLat, double minLng, double maxLng);
+    /** 审核任务申请 */
+    TaskApplicationDTO reviewApplication(Long taskId, Long applicationId, TaskApplicationDecisionDTO decisionPayload);
+
+    /** 家教提交任务申请 */
+    ResponseEntity<?> applyForTask(Long taskId, TaskApplicationRequestDTO request);
+
+    /** 获取我申请的任务 */
+    List<Map<String, Object>> getMyApplications(Long tutorId);
 }
