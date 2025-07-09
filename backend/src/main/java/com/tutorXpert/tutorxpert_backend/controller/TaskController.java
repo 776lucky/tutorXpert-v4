@@ -1,7 +1,7 @@
 package com.tutorXpert.tutorxpert_backend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.tutorXpert.tutorxpert_backend.domain.dto.TaskApplicationRequest;
+import com.tutorXpert.tutorxpert_backend.domain.dto.task.TaskApplicationRequest;
 import com.tutorXpert.tutorxpert_backend.domain.po.Task;
 import com.tutorXpert.tutorxpert_backend.domain.po.TaskApplication;
 import com.tutorXpert.tutorxpert_backend.mapper.TaskApplicationMapper;

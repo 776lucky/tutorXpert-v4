@@ -18,4 +18,7 @@ public class Student {
     private String educationLevel;     // 教育水平
     private String addressArea;        // 地址区域（模糊地址）
     private String briefDescription;   // 简要描述（选填）
+
+    public void setSubjectNeed(String subjectNeed) {
+    }
 }

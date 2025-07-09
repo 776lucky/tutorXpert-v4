@@ -6,4 +6,5 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface TutorMapper extends BaseMapper<Tutor> {
+    void insertOrUpdate(Tutor tutor);
 }

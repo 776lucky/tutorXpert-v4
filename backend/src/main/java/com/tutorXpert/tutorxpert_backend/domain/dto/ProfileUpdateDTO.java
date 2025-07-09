@@ -4,16 +4,19 @@ import lombok.Data;
 
 @Data
 public class ProfileUpdateDTO {
-    private String address;          // 通用 User 字段
+    private String address;
 
-    // Tutor 专属字段
+    // Tutor专属字段
     private String bio;
     private String expertise;
     private Integer hourlyRate;
+    private Integer yearsOfExperience;
+    private String certifications;
 
-    // Student 专属字段
+    // Student专属字段
     private String educationLevel;
     private String subjectNeed;
     private String addressArea;
     private String briefDescription;
 }
+

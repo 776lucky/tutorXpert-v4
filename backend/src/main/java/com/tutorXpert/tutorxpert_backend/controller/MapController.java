@@ -1,7 +1,7 @@
 package com.tutorXpert.tutorxpert_backend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.tutorXpert.tutorxpert_backend.domain.dto.UserLocationDTO;
+import com.tutorXpert.tutorxpert_backend.domain.dto.user.UserLocationDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.User;
 import com.tutorXpert.tutorxpert_backend.mapper.UserMapper;
 import org.springframework.beans.BeanUtils;
@@ -30,6 +30,8 @@ public class MapController {
      *   - north, south, east, west：地图边界坐标
      * 【是否需要登录】否（公共接口）
      */
+
+
     @GetMapping("/users")
     public List<UserLocationDTO> searchUsersByLocation(
             @RequestParam String role,

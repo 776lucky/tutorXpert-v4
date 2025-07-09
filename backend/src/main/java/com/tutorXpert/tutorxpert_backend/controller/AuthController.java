@@ -3,7 +3,7 @@ package com.tutorXpert.tutorxpert_backend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tutorXpert.tutorxpert_backend.domain.dto.LoginRequestDTO;
-import com.tutorXpert.tutorxpert_backend.domain.dto.UserLoginDTO;
+import com.tutorXpert.tutorxpert_backend.domain.dto.user.UserLoginDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.Student;
 import com.tutorXpert.tutorxpert_backend.domain.po.Tutor;
 import com.tutorXpert.tutorxpert_backend.domain.po.User;
@@ -13,11 +13,13 @@ import com.tutorXpert.tutorxpert_backend.mapper.UserMapper;
 import com.tutorXpert.tutorxpert_backend.security.JwtUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -93,9 +95,10 @@ public class AuthController {
             response.put("user", dto);
             return response;
         }
+
         System.out.println("email = " + email);
         System.out.println("password = " + password);
 
-        throw new RuntimeException("Invalid credentials");
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
     }
 }

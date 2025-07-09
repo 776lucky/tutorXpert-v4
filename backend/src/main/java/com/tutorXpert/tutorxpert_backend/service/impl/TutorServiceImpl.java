@@ -1,6 +1,8 @@
 package com.tutorXpert.tutorxpert_backend.service.impl;
 
-import com.tutorXpert.tutorxpert_backend.domain.dto.TutorProfileSearchPageDTO;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.tutorXpert.tutorxpert_backend.domain.dto.ProfileUpdateDTO;
+import com.tutorXpert.tutorxpert_backend.domain.dto.user.TutorProfileSearchPageDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.Tutor;
 import com.tutorXpert.tutorxpert_backend.mapper.TutorMapper;
 import com.tutorXpert.tutorxpert_backend.mapper.UserMapper;
@@ -17,7 +19,7 @@ public class TutorServiceImpl implements ITutorService {
     private TutorMapper tutorMapper;
 
     @Autowired
-    private UserMapper userMapper;  // ✅ 新增，用于地图家教搜索
+    private UserMapper userMapper;
 
     @Override
     public List<Tutor> getAllTutors() {
@@ -42,8 +44,27 @@ public class TutorServiceImpl implements ITutorService {
 
     @Override
     public List<TutorProfileSearchPageDTO> searchTutors(double north, double south, double east, double west) {
-        // 调用 UserMapper 的联表查询
         return userMapper.searchTutorProfiles(north, south, east, west);
     }
 
+    @Override
+    public void updateTutorProfile(Long userId, ProfileUpdateDTO payload) {
+        Tutor tutor = tutorMapper.selectOne(new QueryWrapper<Tutor>().eq("user_id", userId));
+        if (tutor == null) {
+            tutor = new Tutor();
+            tutor.setUserId(userId);
+        }
+
+        tutor.setBio(payload.getBio());
+        tutor.setExpertise(payload.getExpertise());
+        tutor.setHourlyRate(payload.getHourlyRate());
+        tutor.setYearsOfExperience(payload.getYearsOfExperience());
+        tutor.setCertifications(payload.getCertifications());
+
+        if (tutor.getId() == null) {
+            tutorMapper.insert(tutor);
+        } else {
+            tutorMapper.updateById(tutor);
+        }
+    }
 }

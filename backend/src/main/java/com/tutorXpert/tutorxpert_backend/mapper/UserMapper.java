@@ -1,8 +1,7 @@
 package com.tutorXpert.tutorxpert_backend.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.tutorXpert.tutorxpert_backend.domain.dto.TutorLocationDTO;
-import com.tutorXpert.tutorxpert_backend.domain.dto.TutorProfileSearchPageDTO;
+import com.tutorXpert.tutorxpert_backend.domain.dto.user.TutorProfileSearchPageDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
