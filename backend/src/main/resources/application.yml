@@ -19,6 +19,7 @@ spring:
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 打印 SQL，可选
+    map-underscore-to-camel-case: true
 
 jwt:
   enabled: false

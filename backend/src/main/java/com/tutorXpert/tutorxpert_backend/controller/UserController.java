@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import com.tutorXpert.tutorxpert_backend.domain.po.Student;
@@ -87,10 +88,10 @@ public class UserController {
             security = { @SecurityRequirement(name = "bearerAuth") }
     )
 
+
     @GetMapping("/profile")
-    public MyProfileDTO getMyProfile(@RequestHeader("Authorization") String token) {
-        token = token.replace("Bearer ", "");
-        String email = jwtUtil.validateToken(token);
+    public MyProfileDTO getMyProfile() {
+        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (email == null) {
             throw new RuntimeException("Invalid token");
         }
@@ -108,14 +109,17 @@ public class UserController {
 
         if ("tutor".equals(user.getRole())) {
             Tutor tutor = tutorMapper.selectOne(new QueryWrapper<Tutor>().eq("user_id", user.getId()));
-            profileDTO.setRoleProfile(tutor);  // 可后续换成 TutorProfileDTO
+            profileDTO.setRoleProfile(tutor);
         } else if ("student".equals(user.getRole())) {
             Student student = studentMapper.selectOne(new QueryWrapper<Student>().eq("user_id", user.getId()));
-            profileDTO.setRoleProfile(student);  // 可后续换成 StudentProfileDTO
+            profileDTO.setRoleProfile(student);
         }
 
         return profileDTO;
     }
+
+
+
 
     @Operation(
             summary = "修改我的个人资料",
@@ -126,11 +130,8 @@ public class UserController {
             security = { @SecurityRequirement(name = "bearerAuth") }
     )
     @PutMapping("/profile")
-    public Map<String, Object> updateMyProfile(@RequestHeader("Authorization") String token,
-                                               @RequestBody ProfileUpdateDTO payload) {
-        // 解析 token，获取用户
-        token = token.replace("Bearer ", "");
-        String email = jwtUtil.validateToken(token);
+    public Map<String, Object> updateMyProfile(@RequestBody ProfileUpdateDTO payload) {
+        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (email == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }
@@ -152,8 +153,9 @@ public class UserController {
         // 更新专属字段
         if ("tutor".equals(user.getRole()) && payload.getTutorProfile() != null) {
             TutorProfileUpdateDTO t = payload.getTutorProfile();
+            System.out.println("user.getId(): " + user.getId());
             Tutor tutor = tutorMapper.selectOne(new QueryWrapper<Tutor>().eq("user_id", user.getId()));
-            if (tutor == null) {
+            System.out.println("Tutor query result: " + tutor);            if (tutor == null) {
                 tutor = new Tutor();
                 tutor.setUserId(user.getId());
                 tutor.setBio(t.getBio());
@@ -192,6 +194,7 @@ public class UserController {
 
         return Map.of("message", "Profile updated successfully");
     }
+
 
 
     /** 地址转坐标逻辑（你可以替换真实实现） */

@@ -1,6 +1,7 @@
 package com.tutorXpert.tutorxpert_backend.service;
 
 import com.tutorXpert.tutorxpert_backend.domain.dto.task.*;
+import com.tutorXpert.tutorxpert_backend.domain.po.Task;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -12,7 +13,7 @@ public interface ITaskService {
     TaskDTO createTask(TaskCreateDTO task);
 
     /** 获取我发布的任务 */
-    List<TaskDTO> getMyTasks();
+    List<TaskDTO> getMyTasks(Long userId);
 
     /** 删除任务 */
     void deleteTaskById(Long id);
@@ -30,11 +31,14 @@ public interface ITaskService {
     List<TaskApplicationDTO> getApplicationsByTaskId(Long taskId);
 
     /** 审核任务申请 */
-    TaskApplicationDTO reviewApplication(Long taskId, Long applicationId, TaskApplicationDecisionDTO decisionPayload);
+    TaskApplicationDTO reviewApplication(Long taskId, Long applicationId, TaskApplicationDecisionDTO decision);
 
     /** 家教提交任务申请 */
     ResponseEntity<?> applyForTask(Long taskId, TaskApplicationRequestDTO request);
 
     /** 获取我申请的任务 */
     List<Map<String, Object>> getMyApplications(Long tutorId);
+
+    /** 获取所有任务 */
+    List<Task> getAllTasks();
 }

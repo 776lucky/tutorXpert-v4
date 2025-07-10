@@ -1,14 +1,23 @@
 package com.tutorXpert.tutorxpert_backend.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tutorXpert.tutorxpert_backend.domain.dto.task.*;
+import com.tutorXpert.tutorxpert_backend.domain.po.Task;
 import com.tutorXpert.tutorxpert_backend.domain.po.TaskApplication;
+import com.tutorXpert.tutorxpert_backend.domain.po.User;
 import com.tutorXpert.tutorxpert_backend.mapper.TaskApplicationMapper;
+import com.tutorXpert.tutorxpert_backend.mapper.TaskMapper;
+import com.tutorXpert.tutorxpert_backend.mapper.UserMapper;
+import com.tutorXpert.tutorxpert_backend.security.JwtUtil;
 import com.tutorXpert.tutorxpert_backend.service.ITaskService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -24,38 +33,125 @@ public class TaskController {
     @Autowired
     private TaskApplicationMapper taskApplicationMapper;
 
-    @Operation(summary = "发布新任务", description = "发布一个新任务")
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private UserMapper userMapper;
+    @Autowired
+    private TaskMapper taskMapper;
+
+    @Operation(
+            summary = "Retrieve all tasks",
+            description = "Fetches the complete list of all tasks available on the platform. "
+                    + "This endpoint is typically used to display all tasks to users without filters. "
+                    + "Note: For location-based filtering, use the /tasks/search endpoint."
+    )
+    @GetMapping
+    public ResponseEntity<List<TaskDTO>> getAllTasks() {
+        List<Task> tasks = taskService.getAllTasks();
+        List<TaskDTO> dtos = new ArrayList<>();
+        for (Task task : tasks) {
+            TaskDTO dto = new TaskDTO();
+            BeanUtils.copyProperties(task, dto);
+            dtos.add(dto);
+        }
+        return ResponseEntity.ok(dtos);
+    }
+
+
+
+
+    @Operation(
+            summary = "Create a new task",
+            description = "Allows a student to post a new task. "
+                    + "The request must include task details such as title, subject, description, address, coordinates, budget, and deadline. "
+                    + "This endpoint is primarily for students to publish tutoring tasks."
+    )
     @PostMapping
     public TaskDTO createTask(@RequestBody TaskCreateDTO dto) {
         return taskService.createTask(dto);
     }
 
-    @Operation(summary = "获取我发布的任务", description = "获取当前用户发布的所有任务")
+
+
+
+    @Operation(
+            summary = "Retrieve my posted tasks",
+            description = "Fetches tasks posted by the currently logged-in student. "
+                    + "Authentication is required. The system identifies the user from the JWT token."
+    )
     @GetMapping("/my_tasks")
-    public List<TaskDTO> getMyTasks() {
-        return taskService.getMyTasks();
+    public List<TaskDTO> getMyTasks(HttpServletRequest request) {
+        String token = request.getHeader("Authorization").substring(7);
+        String email = jwtUtil.validateToken(token);
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("email", email));
+        return taskService.getMyTasks(user.getId());
     }
 
-    @Operation(summary = "删除任务", description = "根据任务 ID 删除任务")
+
+
+
+    @Operation(
+            summary = "Delete a task",
+            description = "Deletes a task by its ID. "
+                    + "Only the task owner (student who created the task) can delete it. "
+                    + "Ensure the task ID exists and belongs to the authenticated user."
+    )
     @DeleteMapping("/{task_id}")
     public void deleteTask(@PathVariable("task_id") Long taskId) {
         taskService.deleteTaskById(taskId);
     }
 
-    @Operation(summary = "获取任务详情", description = "根据任务 ID 获取任务详情")
+
+
+
+    @Operation(
+            summary = "Get task details by ID",
+            description = "Retrieves detailed information about a specific task by its ID. "
+                    + "Useful for task detail pages or reviewing task information before applying."
+    )
     @GetMapping("/{task_id}")
     public TaskDTO getTaskById(@PathVariable("task_id") Long taskId) {
         return taskService.getTaskById(taskId);
     }
 
-    @Operation(summary = "修改任务状态", description = "修改任务状态，如 Open、Closed")
+
+
+
+    @Operation(
+            summary = "Update task status",
+            description = "Updates the status of a specific task (e.g., Open, Closed). "
+                    + "Only the task owner (student) can perform this action. "
+                    + "Typically used to close tasks after they have been fulfilled."
+    )
     @PatchMapping("/{task_id}/status")
-    public TaskDTO updateTaskStatus(@PathVariable("task_id") Long taskId,
-                                    @RequestBody TaskStatusUpdateDTO dto) {
-        return taskService.updateTaskStatus(taskId, dto);
+    public ResponseEntity<TaskDTO> updateTaskStatus(@PathVariable("task_id") Long taskId,
+                                                    @RequestBody TaskStatusUpdateDTO dto,
+                                                    HttpServletRequest request) {
+        String token = request.getHeader("Authorization").substring(7);
+        String email = jwtUtil.validateToken(token);
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("email", email));
+
+        Task task = taskMapper.selectById(taskId);
+        if (task == null || !task.getUserId().equals(user.getId())) {
+            throw new RuntimeException("No permission to update this task");
+        }
+
+        TaskDTO updatedTask = taskService.updateTaskStatus(taskId, dto);
+        return ResponseEntity.ok(updatedTask);
     }
 
-    @Operation(summary = "地图筛选任务", description = "根据地图边界经纬度筛选任务")
+
+
+
+
+    @Operation(
+            summary = "Search tasks by map location",
+            description = "Filters tasks based on map boundaries using latitude and longitude ranges. "
+                    + "Useful for displaying tasks on map-based search pages. "
+                    + "Returns tasks within the specified geographic region."
+    )
     @GetMapping("/search")
     public List<TaskSearchDTO> searchTasksByLocation(
             @RequestParam double minLat,
@@ -66,13 +162,27 @@ public class TaskController {
         return taskService.searchTasksByLocation(minLat, maxLat, minLng, maxLng);
     }
 
-    @Operation(summary = "获取任务申请列表", description = "获取指定任务下的所有申请")
+
+
+
+    @Operation(
+            summary = "Get task applications",
+            description = "Retrieves the list of all applications submitted for a specific task. "
+                    + "Primarily used by students to review tutors who have applied for their tasks."
+    )
     @GetMapping("/{task_id}/applications")
     public List<TaskApplicationDTO> getApplications(@PathVariable("task_id") Long taskId) {
         return taskService.getApplicationsByTaskId(taskId);
     }
 
-    @Operation(summary = "审核任务申请", description = "接受或拒绝任务申请")
+
+
+
+    @Operation(
+            summary = "Review task application",
+            description = "Allows a student to accept or reject a specific task application submitted by a tutor. "
+                    + "After accepting an application, the task status or related records may change."
+    )
     @PostMapping("/{task_id}/applications/{application_id}/decision")
     public TaskApplicationDTO reviewApplication(@PathVariable("task_id") Long taskId,
                                                 @PathVariable("application_id") Long applicationId,
@@ -80,22 +190,46 @@ public class TaskController {
         return taskService.reviewApplication(taskId, applicationId, decision);
     }
 
-    @Operation(summary = "家教申请任务", description = "家教提交对任务的申请，重复申请会被拒绝")
+
+
+
+    @Operation(
+            summary = "Apply for a task",
+            description = "Enables tutors to apply for a specific task by submitting a bid amount and message. "
+                    + "Duplicate applications by the same tutor for the same task are not allowed. "
+                    + "Typically used by tutors on task detail pages."
+    )
     @PostMapping("/{task_id}/applications")
     public ResponseEntity<?> applyForTask(@PathVariable("task_id") Long taskId,
                                           @RequestBody TaskApplicationRequestDTO request) {
+
+        System.out.println("收到申请请求：taskId=" + taskId + ", tutorId=" + request.getTutorId());
+
         TaskApplication existing = taskApplicationMapper.selectOne(
                 new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<TaskApplication>()
                         .eq("task_id", taskId)
                         .eq("tutor_id", request.getTutorId())
         );
+
         if (existing != null) {
+            System.out.println("已有申请记录，拒绝重复申请，taskId=" + taskId + ", tutorId=" + request.getTutorId());
             return ResponseEntity.status(409).body(Map.of("message", "You have already applied for this task."));
         }
+
+        System.out.println("未找到重复申请，准备插入新申请，taskId=" + taskId + ", tutorId=" + request.getTutorId());
         return taskService.applyForTask(taskId, request);
     }
 
-    @Operation(summary = "获取我申请的任务", description = "获取当前家教申请过的所有任务")
+
+
+
+
+    @Operation(
+            summary = "Get my task applications",
+            description = "Retrieves the list of all tasks that the current tutor has applied for. "
+                    + "Useful for tutors to track their application history. "
+                    + "Requires specifying the tutor ID."
+    )
     @GetMapping("/my_applications")
     public List<Map<String, Object>> getMyApplications(@RequestParam("tutor_id") Long tutorId) {
         return taskService.getMyApplications(tutorId);

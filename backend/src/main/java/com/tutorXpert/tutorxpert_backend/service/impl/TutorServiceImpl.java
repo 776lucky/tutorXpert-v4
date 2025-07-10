@@ -48,26 +48,37 @@ public class TutorServiceImpl implements ITutorService {
         return userMapper.searchTutorProfiles(north, south, east, west);
     }
 
+
     @Override
     public void updateTutorProfile(Long userId, ProfileUpdateDTO payload) {
+
+        // 查不到才插入，查到就更新
         Tutor tutor = tutorMapper.selectOne(new QueryWrapper<Tutor>().eq("user_id", userId));
         if (tutor == null) {
+            // 确认真的不存在再插入
             tutor = new Tutor();
             tutor.setUserId(userId);
-        }
-        TutorProfileUpdateDTO t = payload.getTutorProfile();  // 取子 DTO
-        if (t != null) {
-            tutor.setBio(t.getBio());
-            tutor.setExpertise(t.getExpertise());
-            tutor.setHourlyRate(t.getHourlyRate());
-            tutor.setYearsOfExperience(t.getYearsOfExperience());
-            tutor.setCertifications(t.getCertifications());
-        }
-
-        if (tutor.getId() == null) {
+            TutorProfileUpdateDTO t = payload.getTutorProfile();
+            if (t != null) {
+                tutor.setBio(t.getBio());
+                tutor.setExpertise(t.getExpertise());
+                tutor.setHourlyRate(t.getHourlyRate());
+                tutor.setYearsOfExperience(t.getYearsOfExperience());
+                tutor.setCertifications(t.getCertifications());
+            }
             tutorMapper.insert(tutor);
         } else {
+            TutorProfileUpdateDTO t = payload.getTutorProfile();
+            if (t != null) {
+                tutor.setBio(t.getBio());
+                tutor.setExpertise(t.getExpertise());
+                tutor.setHourlyRate(t.getHourlyRate());
+                tutor.setYearsOfExperience(t.getYearsOfExperience());
+                tutor.setCertifications(t.getCertifications());
+            }
             tutorMapper.updateById(tutor);
         }
+
+
     }
 }
