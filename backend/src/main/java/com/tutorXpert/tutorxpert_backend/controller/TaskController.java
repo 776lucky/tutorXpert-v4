@@ -14,9 +14,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -200,38 +203,44 @@ public class TaskController {
                     + "Typically used by tutors on task detail pages."
     )
     @PostMapping("/{task_id}/applications")
+// Controller 保持现有逻辑，不再查重，减少多余查询
     public ResponseEntity<?> applyForTask(@PathVariable("task_id") Long taskId,
-                                          @RequestBody TaskApplicationRequestDTO request) {
+                                          @RequestBody TaskApplicationRequestDTO dto,
+                                          HttpServletRequest httpRequest) {
+        String token = httpRequest.getHeader("Authorization").substring(7);
+        String email = jwtUtil.validateToken(token);
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("email", email));
+        Long tutorId = user.getId();
 
-        System.out.println("收到申请请求：taskId=" + taskId + ", tutorId=" + request.getTutorId());
-
-        TaskApplication existing = taskApplicationMapper.selectOne(
-                new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<TaskApplication>()
-                        .eq("task_id", taskId)
-                        .eq("tutor_id", request.getTutorId())
-        );
-
-        if (existing != null) {
-            System.out.println("已有申请记录，拒绝重复申请，taskId=" + taskId + ", tutorId=" + request.getTutorId());
-            return ResponseEntity.status(409).body(Map.of("message", "You have already applied for this task."));
-        }
-
-        System.out.println("未找到重复申请，准备插入新申请，taskId=" + taskId + ", tutorId=" + request.getTutorId());
-        return taskService.applyForTask(taskId, request);
+        // 强制设置 tutorId，防止伪造
+        dto.setTutorId(tutorId);
+        return taskService.applyForTask(taskId, dto);
     }
-
 
 
 
 
     @Operation(
-            summary = "Get my task applications",
-            description = "Retrieves the list of all tasks that the current tutor has applied for. "
-                    + "Useful for tutors to track their application history. "
-                    + "Requires specifying the tutor ID."
+            summary = "Edit a task",
+            description = "Allows students to edit an existing task they have posted. "
+                    + "Editable fields include title, subject, description, address, location coordinates (lat, lng), budget, and deadline. "
+                    + "Typically used by students on the task management page to update task details before the task is accepted."
     )
-    @GetMapping("/my_applications")
-    public List<Map<String, Object>> getMyApplications(@RequestParam("tutor_id") Long tutorId) {
-        return taskService.getMyApplications(tutorId);
+    @PutMapping("/{taskId}")
+    public String updateTask(@PathVariable("taskId") Long taskId,
+                             @RequestBody TaskUpdateDTO dto) {
+        Task task = taskMapper.selectById(taskId);
+        if (task == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found");
+        }
+
+        BeanUtils.copyProperties(dto, task);
+        task.setUpdatedAt(LocalDateTime.now());
+
+        taskMapper.updateById(task);
+        return "Task updated successfully";
     }
+
+
+
 }

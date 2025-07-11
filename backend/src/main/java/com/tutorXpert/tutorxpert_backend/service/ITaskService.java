@@ -36,9 +36,6 @@ public interface ITaskService {
     /** 家教提交任务申请 */
     ResponseEntity<?> applyForTask(Long taskId, TaskApplicationRequestDTO request);
 
-    /** 获取我申请的任务 */
-    List<Map<String, Object>> getMyApplications(Long tutorId);
-
     /** 获取所有任务 */
     List<Task> getAllTasks();
 }

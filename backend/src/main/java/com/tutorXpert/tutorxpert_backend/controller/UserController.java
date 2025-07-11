@@ -153,23 +153,14 @@ public class UserController {
         // 更新专属字段
         if ("tutor".equals(user.getRole()) && payload.getTutorProfile() != null) {
             TutorProfileUpdateDTO t = payload.getTutorProfile();
-            System.out.println("user.getId(): " + user.getId());
             Tutor tutor = tutorMapper.selectOne(new QueryWrapper<Tutor>().eq("user_id", user.getId()));
-            System.out.println("Tutor query result: " + tutor);            if (tutor == null) {
+            if (tutor == null) {
                 tutor = new Tutor();
                 tutor.setUserId(user.getId());
-                tutor.setBio(t.getBio());
-                tutor.setExpertise(t.getExpertise());
-                tutor.setHourlyRate(t.getHourlyRate());
-                tutor.setYearsOfExperience(t.getYearsOfExperience());
-                tutor.setCertifications(t.getCertifications());
+                BeanUtils.copyProperties(t, tutor);
                 tutorMapper.insert(tutor);
             } else {
-                tutor.setBio(t.getBio());
-                tutor.setExpertise(t.getExpertise());
-                tutor.setHourlyRate(t.getHourlyRate());
-                tutor.setYearsOfExperience(t.getYearsOfExperience());
-                tutor.setCertifications(t.getCertifications());
+                BeanUtils.copyProperties(t, tutor);
                 tutorMapper.updateById(tutor);
             }
         } else if ("student".equals(user.getRole()) && payload.getStudentProfile() != null) {
@@ -178,22 +169,17 @@ public class UserController {
             if (student == null) {
                 student = new Student();
                 student.setUserId(user.getId());
-                student.setEducationLevel(s.getEducationLevel());
-                student.setSubjectNeed(s.getSubjectNeed());
-                student.setAddressArea(s.getAddressArea());
-                student.setBriefDescription(s.getBriefDescription());
+                BeanUtils.copyProperties(s, student);
                 studentMapper.insert(student);
             } else {
-                student.setEducationLevel(s.getEducationLevel());
-                student.setSubjectNeed(s.getSubjectNeed());
-                student.setAddressArea(s.getAddressArea());
-                student.setBriefDescription(s.getBriefDescription());
+                BeanUtils.copyProperties(s, student);
                 studentMapper.updateById(student);
             }
         }
 
         return Map.of("message", "Profile updated successfully");
     }
+
 
 
 

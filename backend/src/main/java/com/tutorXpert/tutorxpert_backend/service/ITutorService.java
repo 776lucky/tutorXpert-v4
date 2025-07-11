@@ -1,5 +1,6 @@
 package com.tutorXpert.tutorxpert_backend.service;
 
+import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorMapSearchResultDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.user.ProfileUpdateDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorProfileSearchPageDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.Tutor;
@@ -25,4 +26,8 @@ public interface ITutorService {
 
     // ✅ Tutor 用户更新个人家教资料（对外接口）
     void updateTutorProfile(Long userId, ProfileUpdateDTO payload);
+
+    // 地图专用接口（地图搜索页用，返回专用 DTO）
+    List<TutorMapSearchResultDTO> searchTutorsByMapBounds(double north, double south, double east, double west);
+
 }

@@ -2,6 +2,7 @@ package com.tutorXpert.tutorxpert_backend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tutorXpert.tutorxpert_backend.domain.dto.profile.TutorProfileUpdateDTO;
+import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorMapSearchResultDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.user.ProfileUpdateDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorProfileSearchPageDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.Tutor;
@@ -50,6 +51,12 @@ public class TutorServiceImpl implements ITutorService {
 
 
     @Override
+    public List<TutorMapSearchResultDTO> searchTutorsByMapBounds(double north, double south, double east, double west) {
+        return tutorMapper.searchTutorsByMapBounds(north, south, east, west);
+    }
+
+
+    @Override
     public void updateTutorProfile(Long userId, ProfileUpdateDTO payload) {
 
         // 查不到才插入，查到就更新
@@ -78,7 +85,5 @@ public class TutorServiceImpl implements ITutorService {
             }
             tutorMapper.updateById(tutor);
         }
-
-
     }
 }

@@ -1,5 +1,6 @@
 package com.tutorXpert.tutorxpert_backend.controller;
 
+import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorMapSearchResultDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorProfileSearchPageDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.Tutor;
 import com.tutorXpert.tutorxpert_backend.mapper.UserMapper;
@@ -36,14 +37,13 @@ public class TutorController {
         return tutorService.createTutor(tutor);
     }
 
-    /** 地图搜索：前台家教地图搜索 */
-    @Operation(summary = "地图家教搜索（前台用）")
+    @Operation(summary = "Search tutors by map bounds")
     @GetMapping("/search")
-    public List<TutorProfileSearchPageDTO> searchTutors(
+    public List<TutorMapSearchResultDTO> searchTutorsByMapBounds(
             @RequestParam double north,
             @RequestParam double south,
             @RequestParam double east,
             @RequestParam double west) {
-        return tutorService.searchTutors(north, south, east, west);
+        return tutorService.searchTutorsByMapBounds(north, south, east, west);
     }
 }

@@ -11,6 +11,7 @@ import com.tutorXpert.tutorxpert_backend.mapper.UserMapper;
 import com.tutorXpert.tutorxpert_backend.service.ITaskService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -216,29 +217,28 @@ public class TaskServiceImpl implements ITaskService {
 
     /** 家教提交任务申请（待实现） */
     @Override
-    @Transactional
-    public ResponseEntity<?> applyForTask(Long taskId, TaskApplicationRequestDTO request) {
-        TaskApplication application = new TaskApplication();
-        application.setTaskId(taskId);
-        application.setTutorId(request.getTutorId());
-        application.setBidAmount(request.getBidAmount());
-        application.setMessage(request.getMessage());
-        application.setStatus("Pending");
-        application.setCreatedAt(LocalDateTime.now());
-        application.setUpdatedAt(LocalDateTime.now());
+    public ResponseEntity<?> applyForTask(Long taskId, TaskApplicationRequestDTO dto) {
+        TaskApplication newApp = new TaskApplication();
+        newApp.setTaskId(taskId);
+        newApp.setTutorId(dto.getTutorId());
+        newApp.setBidAmount(dto.getBidAmount());
+        newApp.setMessage(dto.getMessage());
+        newApp.setStatus("Pending");
+        newApp.setCreatedAt(LocalDateTime.now());
+        newApp.setUpdatedAt(LocalDateTime.now());
 
-        int result = taskApplicationMapper.insert(application);
-        System.out.println("插入结果行数：" + result);
-        return ResponseEntity.ok(Map.of("message", "Application submitted successfully"));
+        try {
+            taskApplicationMapper.insert(newApp);  // 自动防并发
+            return ResponseEntity.ok(Map.of("message", "Application submitted successfully."));
+        } catch (DuplicateKeyException e) {
+            return ResponseEntity.status(409).body(Map.of("message", "You have already applied for this task."));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("message", "Internal server error."));
+        }
     }
 
 
-    /** 获取我申请的任务（待实现） */
-    @Override
-    public List<Map<String, Object>> getMyApplications(Long tutorId) {
-        // TODO: 实现
-        return List.of();
-    }
+
 
     @Override
     public List<Task> getAllTasks() {
