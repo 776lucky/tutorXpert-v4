@@ -2,6 +2,7 @@ package com.tutorXpert.tutorxpert_backend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tutorXpert.tutorxpert_backend.domain.dto.profile.TutorProfileUpdateDTO;
+import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorDetailDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorMapSearchResultDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.user.ProfileUpdateDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorProfileSearchPageDTO;
@@ -86,4 +87,10 @@ public class TutorServiceImpl implements ITutorService {
             tutorMapper.updateById(tutor);
         }
     }
+
+    @Override
+    public TutorDetailDTO getTutorDetailById(Long tutorId) {
+        return tutorMapper.getTutorDetailById(tutorId);
+    }
+
 }

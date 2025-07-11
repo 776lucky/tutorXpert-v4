@@ -1,6 +1,7 @@
 package com.tutorXpert.tutorxpert_backend.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorDetailDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorMapSearchResultDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.Tutor;
 import org.apache.ibatis.annotations.Mapper;
@@ -24,5 +25,18 @@ public interface TutorMapper extends BaseMapper<Tutor> {
             @Param("south") double south,
             @Param("east") double east,
             @Param("west") double west);
+
+
+    @Select("""
+        SELECT t.id AS tutorId, t.bio, t.expertise, t.hourly_rate AS hourlyRate,
+               t.years_of_experience AS yearsOfExperience, t.certifications,
+               u.lat, u.lng
+        FROM tutors t
+        JOIN users u ON t.user_id = u.id
+        WHERE t.id = #{tutorId}
+    """)
+    TutorDetailDTO getTutorDetailById(@Param("tutorId") Long tutorId);
+
+
 }
 

@@ -4,6 +4,7 @@ import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorMapSearchResultDT
 import com.tutorXpert.tutorxpert_backend.domain.dto.user.ProfileUpdateDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorProfileSearchPageDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.Tutor;
+import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorDetailDTO;
 
 import java.util.List;
 
@@ -29,5 +30,7 @@ public interface ITutorService {
 
     // 地图专用接口（地图搜索页用，返回专用 DTO）
     List<TutorMapSearchResultDTO> searchTutorsByMapBounds(double north, double south, double east, double west);
+
+    TutorDetailDTO getTutorDetailById(Long tutorId);
 
 }

@@ -1,5 +1,6 @@
 package com.tutorXpert.tutorxpert_backend.controller;
 
+import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorDetailDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorMapSearchResultDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorProfileSearchPageDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.Tutor;
@@ -46,4 +47,12 @@ public class TutorController {
             @RequestParam double west) {
         return tutorService.searchTutorsByMapBounds(north, south, east, west);
     }
+
+
+    @Operation(summary = "Get tutor detail by ID (for appointment)")
+    @GetMapping("/{tutor_id}")
+    public TutorDetailDTO getTutorDetailById(@PathVariable("tutor_id") Long tutorId) {
+        return tutorService.getTutorDetailById(tutorId);
+    }
+
 }

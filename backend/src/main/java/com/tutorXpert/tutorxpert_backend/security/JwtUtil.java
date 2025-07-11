@@ -1,5 +1,6 @@
 package com.tutorXpert.tutorxpert_backend.security;
 
+import cn.hutool.jwt.Claims;
 import com.tutorXpert.tutorxpert_backend.config.JwtConfig;
 import org.springframework.stereotype.Component;
 import cn.hutool.jwt.JWT;
@@ -15,15 +16,19 @@ public class JwtUtil {
     }
 
     // 生成 Token
-    public String generateToken(String username) {
+    public String generateToken(String username, Long userId) {
         long now = System.currentTimeMillis();
         return JWT.create()
+                .setPayload("userId", userId)
                 .setPayload("username", username)
                 .setPayload("iat", now)
                 .setPayload("exp", now + jwtConfig.getExpiration())
                 .setKey(jwtConfig.getSecret().getBytes())
                 .sign();
     }
+
+
+
 
     // 验证 Token
     public String validateToken(String token) {

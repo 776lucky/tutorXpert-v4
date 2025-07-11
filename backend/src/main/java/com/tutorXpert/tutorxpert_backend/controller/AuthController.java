@@ -87,7 +87,7 @@ public class AuthController {
 
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("email", email));
         if (user != null && encoder.matches(password, user.getHashedPassword())) {
-            String token = jwtUtil.generateToken(email);
+            String token = jwtUtil.generateToken(email, user.getId());
             UserLoginDTO dto = new UserLoginDTO();
             BeanUtils.copyProperties(user, dto);
             Map<String, Object> response = new HashMap<>();
