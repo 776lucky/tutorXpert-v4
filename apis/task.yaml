@@ -1,0 +1,110 @@
+openapi: 3.0.1
+info:
+  title: TutorXpert API
+  version: 1.0.0
+paths:
+  /tasks:
+    post:
+      summary: 创建任务
+      description: 学生发布新任务。客户端在 Header 中附带 Bearer Token 用于鉴权。
+      tags:
+        - task-controller/student
+        - task-controller
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCreateDTO'
+            examples:
+              default:
+                summary: 示例
+                value:
+                  title: "Year-11 Maths Tutor Needed"
+                  subject: "Mathematics"
+                  description: "Need help with calculus for three weeks."
+                  address: "UNSW Kensington NSW 2033"
+                  lat: -33.9173
+                  lng: 151.2310
+                  budget: "30–40 AUD per hour"
+                  deadline: "2025-07-20T23:59:59"
+      responses:
+        '201':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '400':
+          description: 请求参数错误
+        '401':
+          description: 未认证或 Token 无效
+        '409':
+          description: 重复数据或业务冲突
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    TaskCreateDTO:
+      type: object
+      required:
+        - title
+        - subject
+        - description
+        - address
+        - budget
+      properties:
+        title:
+          type: string
+          maxLength: 100
+        subject:
+          type: string
+          maxLength: 50
+        description:
+          type: string
+          maxLength: 1000
+        address:
+          type: string
+        lat:
+          type: number
+          format: double
+        lng:
+          type: number
+          format: double
+        budget:
+          type: string
+        deadline:
+          type: string
+          format: date-time
+    TaskDTO:
+      allOf:
+        - $ref: '#/components/schemas/TaskCreateDTO'
+        - type: object
+          required:
+            - id
+            - userId
+            - status
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: integer
+              format: int64
+            userId:
+              type: integer
+              format: int64
+            status:
+              type: string
+              enum: [Open, InProgress, Completed, Cancelled]
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+

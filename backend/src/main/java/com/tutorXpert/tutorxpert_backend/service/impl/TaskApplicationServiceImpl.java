@@ -1,13 +1,16 @@
 package com.tutorXpert.tutorxpert_backend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.tutorXpert.tutorxpert_backend.domain.dto.task.TaskApplicationDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.TaskApplication;
 import com.tutorXpert.tutorxpert_backend.mapper.TaskApplicationMapper;
 import com.tutorXpert.tutorxpert_backend.service.ITaskApplicationService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 任务申请（TaskApplication）服务层实现
@@ -50,9 +53,15 @@ public class TaskApplicationServiceImpl implements ITaskApplicationService {
      * 获取当前家教提交的申请记录
      */
     @Override
-    public List<TaskApplication> getApplicationsByTutorId(Long tutorId) {
-        return taskApplicationMapper.selectList(
+    public List<TaskApplicationDTO> getApplicationsByTutorId(Long tutorId) {
+        List<TaskApplication> list = taskApplicationMapper.selectList(
                 new QueryWrapper<TaskApplication>().eq("tutor_id", tutorId)
         );
+
+        return list.stream().map(app -> {
+            TaskApplicationDTO dto = new TaskApplicationDTO();
+            BeanUtils.copyProperties(app, dto);
+            return dto;
+        }).collect(Collectors.toList());
     }
 }

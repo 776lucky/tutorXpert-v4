@@ -1,5 +1,7 @@
 package com.tutorXpert.tutorxpert_backend.domain.po;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,8 +14,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @TableName("tasks")
 public class Task {
+    @TableId(type = IdType.AUTO)  // ✅ 明确指定主键自增
     private Long id;
-    private Long userId;           // 发布人 ID
+
+    private Long userId;
     private String title;
     private String subject;
     private String description;

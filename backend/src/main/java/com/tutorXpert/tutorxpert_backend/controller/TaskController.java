@@ -12,6 +12,7 @@ import com.tutorXpert.tutorxpert_backend.security.JwtUtil;
 import com.tutorXpert.tutorxpert_backend.service.ITaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -41,8 +42,27 @@ public class TaskController {
 
     @Autowired
     private UserMapper userMapper;
+
     @Autowired
     private TaskMapper taskMapper;
+
+
+    @Autowired
+    public TaskController(ITaskService taskService, JwtUtil jwtUtil) {
+        this.taskService = taskService;
+        this.jwtUtil = jwtUtil;
+    }
+
+
+    @Operation(summary = "Create a new task", description = "Students can create a new task")
+    @PostMapping
+    public TaskDTO createTask(@RequestBody @Valid TaskCreateDTO dto,
+                              @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7); // remove "Bearer "
+        Long userId = jwtUtil.getUserIdFromToken(token).longValue();
+        return taskService.createTask(dto, userId);
+    }
+
 
     @Operation(
             summary = "Retrieve all tasks",
@@ -65,18 +85,6 @@ public class TaskController {
 
 
 
-    @Operation(
-            summary = "Create a new task",
-            description = "Allows a student to post a new task. "
-                    + "The request must include task details such as title, subject, description, address, coordinates, budget, and deadline. "
-                    + "This endpoint is primarily for students to publish tutoring tasks."
-    )
-    @PostMapping
-    public TaskDTO createTask(@RequestBody TaskCreateDTO dto) {
-        return taskService.createTask(dto);
-    }
-
-
 
 
     @Operation(
@@ -85,11 +93,9 @@ public class TaskController {
                     + "Authentication is required. The system identifies the user from the JWT token."
     )
     @GetMapping("/my_tasks")
-    public List<TaskDTO> getMyTasks(HttpServletRequest request) {
-        String token = request.getHeader("Authorization").substring(7);
-        String email = jwtUtil.validateToken(token);
-        User user = userMapper.selectOne(new QueryWrapper<User>().eq("email", email));
-        return taskService.getMyTasks(user.getId());
+    public List<TaskDTO> getMyTasks(@RequestHeader("Authorization") String token) {
+        Long userId = Long.valueOf(jwtUtil.getUserIdFromToken(token.substring(7)));
+        return taskService.getMyTasks(userId);
     }
 
 
@@ -115,7 +121,9 @@ public class TaskController {
                     + "Useful for task detail pages or reviewing task information before applying."
     )
     @GetMapping("/{task_id}")
-    public TaskDTO getTaskById(@PathVariable("task_id") Long taskId) {
+    public TaskDTO getTaskById(@PathVariable("task_id") Long taskId,
+                               @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        System.out.println("🧪 传入 token: " + authHeader);
         return taskService.getTaskById(taskId);
     }
 

@@ -2,12 +2,15 @@ package com.tutorXpert.tutorxpert_backend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tutorXpert.tutorxpert_backend.domain.dto.task.*;
+import com.tutorXpert.tutorxpert_backend.domain.po.Student;
 import com.tutorXpert.tutorxpert_backend.domain.po.Task;
 import com.tutorXpert.tutorxpert_backend.domain.po.TaskApplication;
 import com.tutorXpert.tutorxpert_backend.domain.po.User;
+import com.tutorXpert.tutorxpert_backend.mapper.StudentMapper;
 import com.tutorXpert.tutorxpert_backend.mapper.TaskApplicationMapper;
 import com.tutorXpert.tutorxpert_backend.mapper.TaskMapper;
 import com.tutorXpert.tutorxpert_backend.mapper.UserMapper;
+import com.tutorXpert.tutorxpert_backend.security.JwtUtil;
 import com.tutorXpert.tutorxpert_backend.service.ITaskService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +43,12 @@ public class TaskServiceImpl implements ITaskService {
     @Autowired
     private TaskApplicationMapper taskApplicationMapper;
 
+    @Autowired
+    private StudentMapper studentMapper;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
 
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -57,27 +66,27 @@ public class TaskServiceImpl implements ITaskService {
 
     /** 发布任务 */
     @Override
-    public TaskDTO createTask(TaskCreateDTO dto) {
+    public TaskDTO createTask(TaskCreateDTO dto, Long userId) {
         Task task = new Task();
-        task.setUserId(getCurrentUserId());
-        task.setTitle(dto.getTitle());
-        task.setSubject(dto.getSubject());
-        task.setDescription(dto.getDescription());
-        task.setAddress(dto.getAddress());
-        task.setLat(dto.getLat());
-        task.setLng(dto.getLng());
-        task.setBudget(dto.getBudget());
-        task.setDeadline(dto.getDeadline());
+        BeanUtils.copyProperties(dto, task);
+        task.setUserId(userId);
         task.setStatus("Open");
         task.setCreatedAt(LocalDateTime.now());
         task.setUpdatedAt(LocalDateTime.now());
 
-        taskMapper.insert(task);
+        int rows = taskMapper.insert(task);
+        if (rows != 1) {
+            throw new RuntimeException("Failed to create task");
+        }
 
-        TaskDTO taskDTO = new TaskDTO();
-        BeanUtils.copyProperties(task, taskDTO);
-        return taskDTO;
+        TaskDTO result = new TaskDTO();
+        BeanUtils.copyProperties(task, result); // 回填ID
+        return result;
     }
+
+
+
+
 
     /** 获取我发布的任务 */
     @Override
@@ -91,6 +100,7 @@ public class TaskServiceImpl implements ITaskService {
             return dto;
         }).toList();
     }
+
 
 
     /** 删除任务 */
@@ -112,22 +122,22 @@ public class TaskServiceImpl implements ITaskService {
     }
 
 
-
     /** 获取任务详情 */
     @Override
     public TaskDTO getTaskById(Long taskId) {
-        // 1. 查询任务
         Task task = taskMapper.selectById(taskId);
         if (task == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found");
         }
 
-        // 2. 转换 DTO（简化，减少重复）
         TaskDTO dto = new TaskDTO();
-        BeanUtils.copyProperties(task, dto);  // 简化字段复制
+        BeanUtils.copyProperties(task, dto);
 
         return dto;
     }
+
+
+
 
 
     /** 修改任务状态 */

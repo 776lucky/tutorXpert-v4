@@ -1,5 +1,6 @@
 package com.tutorXpert.tutorxpert_backend.service;
 
+import com.tutorXpert.tutorxpert_backend.domain.dto.task.TaskApplicationDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.TaskApplication;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public interface ITaskApplicationService {
      * @param tutorId 家教用户 ID
      * @return 该家教提交的所有申请
      */
-    List<TaskApplication> getApplicationsByTutorId(Long tutorId);
+    List<TaskApplicationDTO> getApplicationsByTutorId(Long tutorId);
 
     /**
      * 根据申请 ID 删除申请（取消申请）

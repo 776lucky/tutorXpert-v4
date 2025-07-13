@@ -25,4 +25,5 @@ public class Appointment {
     private String status;             // Pending / Confirmed / Rejected
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    
 }

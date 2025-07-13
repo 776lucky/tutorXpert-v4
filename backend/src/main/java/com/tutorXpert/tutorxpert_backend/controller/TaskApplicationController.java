@@ -1,6 +1,7 @@
 package com.tutorXpert.tutorxpert_backend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.tutorXpert.tutorxpert_backend.domain.dto.task.TaskApplicationDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.TaskApplication;
 import com.tutorXpert.tutorxpert_backend.domain.po.User;
 import com.tutorXpert.tutorxpert_backend.mapper.UserMapper;
@@ -88,15 +89,17 @@ public class TaskApplicationController {
      * 输入：JWT Token（请求头中 Authorization）
      * 输出：当前 tutor 提交的申请记录列表（List<TaskApplication>）
      */
+    @GetMapping("/my_applications")
     @Operation(
             summary = "Get my task applications",
             description = "Retrieves the list of all task applications submitted by the currently logged-in tutor. "
                     + "Useful for tutors to review their application history.",
             security = { @SecurityRequirement(name = "bearerAuth") }
     )
-    @GetMapping("/my_applications")
-    public List<TaskApplication> getMyApplications(HttpServletRequest request) {
-        String token = request.getHeader("Authorization").substring(7);
+    public List<TaskApplicationDTO> getMyApplications(
+            @RequestHeader("Authorization") String authHeader  // ← 显式声明 token 参数
+    ) {
+        String token = authHeader.substring(7);
         String email = jwtUtil.validateToken(token);
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("email", email));
         return taskApplicationService.getApplicationsByTutorId(user.getId());

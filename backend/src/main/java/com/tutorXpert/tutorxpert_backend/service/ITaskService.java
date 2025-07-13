@@ -9,8 +9,7 @@ import java.util.Map;
 
 public interface ITaskService {
 
-    /** 发布任务 */
-    TaskDTO createTask(TaskCreateDTO task);
+
 
     /** 获取我发布的任务 */
     List<TaskDTO> getMyTasks(Long userId);
@@ -38,4 +37,11 @@ public interface ITaskService {
 
     /** 获取所有任务 */
     List<Task> getAllTasks();
+
+    /**
+     * 创建任务
+     * @param dto 任务创建DTO
+     * @return 创建的任务DTO
+     */
+    TaskDTO createTask(TaskCreateDTO dto, Long userId);
 }
