@@ -33,7 +33,7 @@ public interface ITaskService {
     TaskApplicationDTO reviewApplication(Long taskId, Long applicationId, TaskApplicationDecisionDTO decision);
 
     /** 家教提交任务申请 */
-    ResponseEntity<?> applyForTask(Long taskId, TaskApplicationRequestDTO request);
+    TaskApplicationDTO applyForTask(Long taskId, TaskApplicationRequestDTO request);
 
     /** 获取所有任务 */
     List<Task> getAllTasks();

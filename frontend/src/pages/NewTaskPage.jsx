@@ -14,6 +14,17 @@ import { useEffect } from "react";
 const NewTaskPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  // 顶部添加
+  const deadlineOffsetMap = {
+    "1 day": 1,
+    "2 days": 2,
+    "3 days": 3,
+    "5 days": 5,
+    "1 week": 7,
+    "2 weeks": 14,
+    "1 month": 30,
+  };
+
 
   const [formData, setFormData] = useState({
     title: "",
@@ -69,23 +80,32 @@ const NewTaskPage = () => {
     }
 
     try {
-      const user = JSON.parse(localStorage.getItem("user"));
+      const token = localStorage.getItem("token");
+
+// 1. 转换 deadline 为 LocalDateTime 格式
+      const offsetDays = deadlineOffsetMap[formData.deadline];
+      const deadlineDate = new Date();
+      deadlineDate.setDate(deadlineDate.getDate() + offsetDays);
+      const formattedDeadline = deadlineDate.toISOString().slice(0, 19); // e.g. "2025-07-17T14:00:00"
 
       const payload = {
         title: formData.title.trim(),
         subject: formData.subject.trim(),
         description: formData.description.trim(),
-        budget: formData.budget.trim(),
-        deadline: formData.deadline.trim(),
-        address: formData.address.trim(),  // ✅ 只传地址
+        address: formData.address.trim(),
+        lat: formData.lat,
+        lng: formData.lng,
+        budget: parseInt(formData.budget),  // ✅ 转成 int
+        deadline: formattedDeadline,
       };
+
 
       console.log("📤 Final Payload:", payload);
 
       await axios.post(`${import.meta.env.VITE_API_BASE_URL}/tasks`, payload, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -186,22 +206,19 @@ const NewTaskPage = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="budget">Budget Range ($) *</Label>
-                    <Select onValueChange={(value) => handleSelectChange("budget", value)} value={formData.budget} required>
-                      <SelectTrigger id="budget">
-                        <SelectValue placeholder="Select budget range" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="20-30">$20 - $30</SelectItem>
-                        <SelectItem value="30-50">$30 - $50</SelectItem>
-                        <SelectItem value="50-70">$50 - $70</SelectItem>
-                        <SelectItem value="70-100">$70 - $100</SelectItem>
-                        <SelectItem value="100-150">$100 - $150</SelectItem>
-                        <SelectItem value="150-200">$150 - $200</SelectItem>
-                        <SelectItem value="200+">$200+</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="budget">Budget ($) *</Label>
+                    <Input
+                        id="budget"
+                        name="budget"
+                        type="number"
+                        placeholder="e.g. 50"
+                        value={formData.budget}
+                        onChange={handleChange}
+                        required
+                        min={0}
+                    />
                   </div>
+
 
                   <div className="space-y-2">
                     <Label htmlFor="deadline">Deadline *</Label>

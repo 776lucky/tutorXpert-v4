@@ -5,6 +5,7 @@ import com.tutorXpert.tutorxpert_backend.domain.po.TaskApplication;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,6 +13,18 @@ import java.util.Map;
 
 @Mapper
 public interface TaskApplicationMapper extends BaseMapper<TaskApplication> {
+
+    @Update("""
+    UPDATE task_applications
+    SET status = 'Rejected', updated_at = NOW()
+    WHERE task_id = #{taskId}
+      AND id != #{applicationId}
+      AND status = 'Pending'
+    """)
+    int rejectOthers(@Param("taskId") Long taskId,
+                     @Param("applicationId") Long applicationId);
+
+
 
     @Select("""
     SELECT ta.*, t.title, t.subject, t.address, t.deadline

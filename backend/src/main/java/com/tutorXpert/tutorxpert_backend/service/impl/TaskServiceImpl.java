@@ -2,6 +2,7 @@ package com.tutorXpert.tutorxpert_backend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.tutorXpert.tutorxpert_backend.domain.dto.task.*;
+import com.tutorXpert.tutorxpert_backend.domain.enums.TaskStatus;
 import com.tutorXpert.tutorxpert_backend.domain.po.Student;
 import com.tutorXpert.tutorxpert_backend.domain.po.Task;
 import com.tutorXpert.tutorxpert_backend.domain.po.TaskApplication;
@@ -66,25 +67,100 @@ public class TaskServiceImpl implements ITaskService {
 
     /** 发布任务 */
     @Override
-    public TaskDTO createTask(TaskCreateDTO dto, Long userId) {
+    @Transactional
+    public TaskDTO createTask(TaskCreateDTO dto, Long studentId) {
         Task task = new Task();
         BeanUtils.copyProperties(dto, task);
-        task.setUserId(userId);
-        task.setStatus("Open");
+        task.setUserId(studentId);
+        task.setStatus(TaskStatus.OPEN.name());
         task.setCreatedAt(LocalDateTime.now());
-        task.setUpdatedAt(LocalDateTime.now());
-
-        int rows = taskMapper.insert(task);
-        if (rows != 1) {
-            throw new RuntimeException("Failed to create task");
-        }
-
-        TaskDTO result = new TaskDTO();
-        BeanUtils.copyProperties(task, result); // 回填ID
-        return result;
+        task.setUpdatedAt(task.getCreatedAt());
+        taskMapper.insert(task);
+        return toDTO(task);
     }
 
 
+    @Override
+    @Transactional
+    public TaskDTO acceptApplication(Long studentId, Long taskId, Long applicationId) {
+        // 1 任务校验
+        Task task = taskMapper.selectById(taskId);
+        if (task == null || !task.getUserId().equals(studentId) ||
+                !TaskStatus.OPEN.name().equals(task.getStatus()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Illegal operation");
+
+        // 2 更新申请状态
+        TaskApplication app = taskApplicationMapper.selectById(applicationId);
+        if (app == null || !app.getTaskId().equals(taskId))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Application not found");
+        app.setStatus("Accepted");
+        app.setUpdatedAt(LocalDateTime.now());
+        taskApplicationMapper.updateById(app);
+
+        // 同时拒绝其他申请
+        taskApplicationMapper.rejectOthers(taskId, applicationId);
+
+        // 3 乐观更新任务
+        task.setStatus(TaskStatus.ASSIGNED.name());
+        task.setAcceptedTutorId(app.getTutorId());
+        task.setUpdatedAt(LocalDateTime.now());
+        taskMapper.updateById(task);
+        return toDTO(task);
+    }
+
+
+    @Override
+    @Transactional
+    public TaskDTO startTask(Long tutorId, Long taskId) {
+        Task task = taskMapper.selectById(taskId);
+        if (task == null || !task.getAcceptedTutorId().equals(tutorId) ||
+                !TaskStatus.ASSIGNED.name().equals(task.getStatus()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Illegal operation");
+
+        task.setStatus(TaskStatus.IN_PROGRESS.name());
+        task.setUpdatedAt(LocalDateTime.now());
+        taskMapper.updateById(task);
+        return toDTO(task);
+    }
+
+    @Override
+    @Transactional
+    public TaskDTO completeTask(Long studentId, Long taskId) {
+        Task task = taskMapper.selectById(taskId);
+        if (task == null || !task.getUserId().equals(studentId) ||
+                !TaskStatus.IN_PROGRESS.name().equals(task.getStatus()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Illegal operation");
+        task.setStatus(TaskStatus.COMPLETED.name());
+        task.setUpdatedAt(LocalDateTime.now());
+        taskMapper.updateById(task);
+        return toDTO(task);
+    }
+
+    @Override
+    @Transactional
+    public TaskDTO cancelTask(Long userId, Long taskId) {
+        Task task = taskMapper.selectById(taskId);
+        boolean allowed = switch (TaskStatus.valueOf(task.getStatus())) {
+            case OPEN -> task.getUserId().equals(userId);
+            case ASSIGNED, IN_PROGRESS ->
+                    task.getUserId().equals(userId) || task.getAcceptedTutorId().equals(userId);
+            default -> false;
+        };
+        if (!allowed) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Illegal operation");
+        task.setStatus(TaskStatus.CANCELLED.name());
+        task.setUpdatedAt(LocalDateTime.now());
+        taskMapper.updateById(task);
+        return toDTO(task);
+    }
+
+
+    /* private 工具 */
+    private TaskDTO toDTO(Task task){
+        TaskDTO dto = new TaskDTO();
+        BeanUtils.copyProperties(task, dto);
+        dto.setStatusLabel(TaskStatus.valueOf(task.getStatus()).name()); // 若已加 label
+        return dto;
+    }
 
 
 
@@ -193,7 +269,7 @@ public class TaskServiceImpl implements ITaskService {
     }
 
 
-    /** 审核任务申请（待实现） */
+    /** 审核任务申请 */
     @Override
     @Transactional
     public TaskApplicationDTO reviewApplication(Long taskId, Long applicationId, TaskApplicationDecisionDTO decision) {
@@ -225,9 +301,10 @@ public class TaskServiceImpl implements ITaskService {
 
 
 
-    /** 家教提交任务申请（待实现） */
+    /** 家教提交任务申请 */
     @Override
-    public ResponseEntity<?> applyForTask(Long taskId, TaskApplicationRequestDTO dto) {
+    @Transactional
+    public TaskApplicationDTO applyForTask(Long taskId, TaskApplicationRequestDTO dto) {
         TaskApplication newApp = new TaskApplication();
         newApp.setTaskId(taskId);
         newApp.setTutorId(dto.getTutorId());
@@ -238,14 +315,17 @@ public class TaskServiceImpl implements ITaskService {
         newApp.setUpdatedAt(LocalDateTime.now());
 
         try {
-            taskApplicationMapper.insert(newApp);  // 自动防并发
-            return ResponseEntity.ok(Map.of("message", "Application submitted successfully."));
+            taskApplicationMapper.insert(newApp);
+            TaskApplicationDTO result = new TaskApplicationDTO();
+            BeanUtils.copyProperties(newApp, result);
+            return result;
         } catch (DuplicateKeyException e) {
-            return ResponseEntity.status(409).body(Map.of("message", "You have already applied for this task."));
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "You have already applied for this task.");
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("message", "Internal server error."));
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error.");
         }
     }
+
 
 
 

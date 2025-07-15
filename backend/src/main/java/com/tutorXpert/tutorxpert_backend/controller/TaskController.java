@@ -54,12 +54,11 @@ public class TaskController {
     }
 
 
-    @Operation(summary = "Create a new task", description = "Students can create a new task")
+    @Operation(summary = "Create a new task")
     @PostMapping
     public TaskDTO createTask(@RequestBody @Valid TaskCreateDTO dto,
-                              @RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.substring(7); // remove "Bearer "
-        Long userId = jwtUtil.getUserIdFromToken(token).longValue();
+                              @RequestHeader("Authorization") String auth) {
+        Long userId = jwtUtil.getUserIdFromToken(auth.substring(7)).longValue();
         return taskService.createTask(dto, userId);
     }
 
@@ -93,20 +92,15 @@ public class TaskController {
                     + "Authentication is required. The system identifies the user from the JWT token."
     )
     @GetMapping("/my_tasks")
-    public List<TaskDTO> getMyTasks(@RequestHeader("Authorization") String token) {
-        Long userId = Long.valueOf(jwtUtil.getUserIdFromToken(token.substring(7)));
+    public List<TaskDTO> getMyTasks(@RequestHeader("Authorization") String auth) {
+        Long userId = jwtUtil.getUserIdFromToken(auth.substring(7)).longValue();
         return taskService.getMyTasks(userId);
     }
 
 
 
 
-    @Operation(
-            summary = "Delete a task",
-            description = "Deletes a task by its ID. "
-                    + "Only the task owner (student who created the task) can delete it. "
-                    + "Ensure the task ID exists and belongs to the authenticated user."
-    )
+    @Operation(summary = "Delete a task")
     @DeleteMapping("/{task_id}")
     public void deleteTask(@PathVariable("task_id") Long taskId) {
         taskService.deleteTaskById(taskId);
@@ -114,12 +108,7 @@ public class TaskController {
 
 
 
-
-    @Operation(
-            summary = "Get task details by ID",
-            description = "Retrieves detailed information about a specific task by its ID. "
-                    + "Useful for task detail pages or reviewing task information before applying."
-    )
+    @Operation(summary = "Get task details")
     @GetMapping("/{task_id}")
     public TaskDTO getTaskById(@PathVariable("task_id") Long taskId) {
         return taskService.getTaskById(taskId);
@@ -155,30 +144,20 @@ public class TaskController {
 
 
 
-    @Operation(
-            summary = "Search tasks by map location",
-            description = "Filters tasks based on map boundaries using latitude and longitude ranges. "
-                    + "Useful for displaying tasks on map-based search pages. "
-                    + "Returns tasks within the specified geographic region."
-    )
+    @Operation(summary = "Search tasks by location")
     @GetMapping("/search")
     public List<TaskSearchDTO> searchTasksByLocation(
             @RequestParam double minLat,
             @RequestParam double maxLat,
             @RequestParam double minLng,
-            @RequestParam double maxLng
-    ) {
+            @RequestParam double maxLng) {
         return taskService.searchTasksByLocation(minLat, maxLat, minLng, maxLng);
     }
 
 
 
 
-    @Operation(
-            summary = "Get task applications",
-            description = "Retrieves the list of all applications submitted for a specific task. "
-                    + "Primarily used by students to review tutors who have applied for their tasks."
-    )
+    @Operation(summary = "Get applications for a task")
     @GetMapping("/{task_id}/applications")
     public List<TaskApplicationDTO> getApplications(@PathVariable("task_id") Long taskId) {
         return taskService.getApplicationsByTaskId(taskId);
@@ -187,38 +166,24 @@ public class TaskController {
 
 
 
-    @Operation(
-            summary = "Review task application",
-            description = "Allows a student to accept or reject a specific task application submitted by a tutor. "
-                    + "After accepting an application, the task status or related records may change."
-    )
+
+    @Operation(summary = "Review (accept/reject) a task application")
     @PostMapping("/{task_id}/applications/{application_id}/decision")
     public TaskApplicationDTO reviewApplication(@PathVariable("task_id") Long taskId,
-                                                @PathVariable("application_id") Long applicationId,
+                                                @PathVariable("application_id") Long appId,
                                                 @RequestBody TaskApplicationDecisionDTO decision) {
-        return taskService.reviewApplication(taskId, applicationId, decision);
+        return taskService.reviewApplication(taskId, appId, decision);
     }
 
 
 
 
-    @Operation(
-            summary = "Apply for a task",
-            description = "Enables tutors to apply for a specific task by submitting a bid amount and message. "
-                    + "Duplicate applications by the same tutor for the same task are not allowed. "
-                    + "Typically used by tutors on task detail pages."
-    )
+    @Operation(summary = "Tutor applies for a task")
     @PostMapping("/{task_id}/applications")
-// Controller 保持现有逻辑，不再查重，减少多余查询
-    public ResponseEntity<?> applyForTask(@PathVariable("task_id") Long taskId,
-                                          @RequestBody TaskApplicationRequestDTO dto,
-                                          HttpServletRequest httpRequest) {
-        String token = httpRequest.getHeader("Authorization").substring(7);
-        String email = jwtUtil.validateToken(token);
-        User user = userMapper.selectOne(new QueryWrapper<User>().eq("email", email));
-        Long tutorId = user.getId();
-
-        // 强制设置 tutorId，防止伪造
+    public TaskApplicationDTO applyForTask(@PathVariable("task_id") Long taskId,
+                                           @RequestBody @Valid TaskApplicationRequestDTO dto,
+                                           @RequestHeader("Authorization") String auth) {
+        Long tutorId = jwtUtil.getUserIdFromToken(auth.substring(7)).longValue();
         dto.setTutorId(tutorId);
         return taskService.applyForTask(taskId, dto);
     }
@@ -249,4 +214,27 @@ public class TaskController {
 
 
 
+    @Operation(summary = "Tutor starts the task (IN_PROGRESS)")
+    @PatchMapping("/{task_id}/start")
+    public TaskDTO startTask(@PathVariable("task_id") Long taskId,
+                             @RequestHeader("Authorization") String auth) {
+        Long tutorId = jwtUtil.getUserIdFromToken(auth.substring(7)).longValue();
+        return taskService.startTask(tutorId, taskId);
+    }
+
+    @Operation(summary = "Student completes the task (COMPLETED)")
+    @PatchMapping("/{task_id}/complete")
+    public TaskDTO completeTask(@PathVariable("task_id") Long taskId,
+                                @RequestHeader("Authorization") String auth) {
+        Long studentId = jwtUtil.getUserIdFromToken(auth.substring(7)).longValue();
+        return taskService.completeTask(studentId, taskId);
+    }
+
+    @Operation(summary = "Cancel the task (CANCELLED)")
+    @PatchMapping("/{task_id}/cancel")
+    public TaskDTO cancelTask(@PathVariable("task_id") Long taskId,
+                              @RequestHeader("Authorization") String auth) {
+        Long userId = jwtUtil.getUserIdFromToken(auth.substring(7)).longValue();
+        return taskService.cancelTask(userId, taskId);
+    }
 }
