@@ -121,9 +121,7 @@ public class TaskController {
                     + "Useful for task detail pages or reviewing task information before applying."
     )
     @GetMapping("/{task_id}")
-    public TaskDTO getTaskById(@PathVariable("task_id") Long taskId,
-                               @RequestHeader(value = "Authorization", required = false) String authHeader) {
-        System.out.println("🧪 传入 token: " + authHeader);
+    public TaskDTO getTaskById(@PathVariable("task_id") Long taskId) {
         return taskService.getTaskById(taskId);
     }
 

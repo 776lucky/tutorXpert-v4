@@ -17,4 +17,6 @@ public interface TaskMapper extends BaseMapper<Task> {
               AND lng BETWEEN LEAST(#{minLng}, #{maxLng}) AND GREATEST(#{minLng}, #{maxLng})
             """)
     List<Task> selectTasksWithinBounds(double minLat, double maxLat, double minLng, double maxLng);
+
+
 }

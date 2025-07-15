@@ -42,6 +42,10 @@ public class TaskDTO {
     @Schema(description = "任务状态")
     private String status;
 
+    @Schema(description = "任务状态中文标签", accessMode = Schema.AccessMode.READ_ONLY)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String statusLabel;
+
     @Schema(description = "接受任务的家教ID", oneOf = {Long.class}, nullable = true)
     private Long acceptedTutorId;
 

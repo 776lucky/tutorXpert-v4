@@ -9,11 +9,12 @@ import com.tutorXpert.tutorxpert_backend.security.JwtUtil;
 import com.tutorXpert.tutorxpert_backend.service.ITaskApplicationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+
 
 @RestController
 @RequestMapping("/applications")

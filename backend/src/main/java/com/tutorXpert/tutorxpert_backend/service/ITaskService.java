@@ -43,5 +43,14 @@ public interface ITaskService {
      * @param dto 任务创建DTO
      * @return 创建的任务DTO
      */
-    TaskDTO createTask(TaskCreateDTO dto, Long userId);
+//    TaskDTO createTask(TaskCreateDTO dto, Long userId);
+
+
+    TaskDTO createTask(TaskCreateDTO dto, Long studentId);
+    TaskDTO acceptApplication(Long studentId, Long taskId, Long applicationId);
+    TaskDTO startTask(Long tutorId, Long taskId);
+    TaskDTO completeTask(Long studentId, Long taskId);
+    TaskDTO cancelTask(Long userId, Long taskId);
+
+
 }

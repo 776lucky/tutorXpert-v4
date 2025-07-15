@@ -1,19 +1,26 @@
 package com.tutorXpert.tutorxpert_backend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.tutorXpert.tutorxpert_backend.domain.dto.AvailableSlots.TutorTimeSlotDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.profile.TutorProfileUpdateDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorDetailDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorMapSearchResultDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.user.ProfileUpdateDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorProfileSearchPageDTO;
+import com.tutorXpert.tutorxpert_backend.domain.po.TimeSlot;
 import com.tutorXpert.tutorxpert_backend.domain.po.Tutor;
+import com.tutorXpert.tutorxpert_backend.domain.po.TutorTimeSlot;
+import com.tutorXpert.tutorxpert_backend.mapper.TimeSlotMapper;
 import com.tutorXpert.tutorxpert_backend.mapper.TutorMapper;
+import com.tutorXpert.tutorxpert_backend.mapper.TutorTimeSlotMapper;
 import com.tutorXpert.tutorxpert_backend.mapper.UserMapper;
 import com.tutorXpert.tutorxpert_backend.service.ITutorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class TutorServiceImpl implements ITutorService {
@@ -23,6 +30,10 @@ public class TutorServiceImpl implements ITutorService {
 
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private TutorTimeSlotMapper tutorTimeSlotMapper;
+    @Autowired
+    private TimeSlotMapper timeSlotMapper;
 
     @Override
     public List<Tutor> getAllTutors() {
@@ -93,4 +104,27 @@ public class TutorServiceImpl implements ITutorService {
         return tutorMapper.getTutorDetailById(tutorId);
     }
 
+    @Override
+    public List<TutorTimeSlotDTO> getTutorTimeSlots(Long tutorId) {
+        List<TutorTimeSlot> slots = tutorTimeSlotMapper.selectList(
+                new QueryWrapper<TutorTimeSlot>()
+                        .eq("tutor_id", tutorId)
+        );
+
+        if (slots.isEmpty()) return List.of();
+
+        // 获取所有 slotId → 时间段
+        List<Long> slotIds = slots.stream().map(TutorTimeSlot::getSlotId).toList();
+        Map<Long, TimeSlot> timeSlotMap = timeSlotMapper.selectBatchIds(slotIds)
+                .stream().collect(Collectors.toMap(TimeSlot::getId, ts -> ts));
+
+        return slots.stream().map(s -> {
+            TimeSlot ts = timeSlotMap.get(s.getSlotId());
+            TutorTimeSlotDTO dto = new TutorTimeSlotDTO();
+            dto.setDate(s.getAvailableDate());
+            dto.setStartTime(ts.getStartTime().toString());
+            dto.setEndTime(ts.getEndTime().toString());
+            return dto;
+        }).toList();
+    }
 }

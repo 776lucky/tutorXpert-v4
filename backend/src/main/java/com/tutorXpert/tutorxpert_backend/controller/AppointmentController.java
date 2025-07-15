@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/appointments")
@@ -19,13 +20,19 @@ public class AppointmentController {
     @Autowired private JwtUtil jwtUtil;
 
     /* 2.3 学生创建预约 */
-    @Operation(summary = "Create appointment (student)")
+    /**
+     * 学生根据日期 + slotIds 预约 tutor
+     * POST /appointments
+     */
+    @Operation(summary = "Book tutor slots (student)")
     @PostMapping
-    public AppointmentDTO create(@RequestBody @Valid AppointmentCreateDTO dto,
-                                 @RequestHeader("Authorization") String auth) {
-        String raw = auth.substring(7);
-        Long studentId = jwtUtil.getUserIdFromToken(raw).longValue();   // 方案 A
-        return appointmentService.createAppointment(studentId, dto);
+    public Map<String, String> create(
+            @RequestBody @Valid AppointmentCreateDTO dto,
+            @RequestHeader("Authorization") String auth) {
+
+        Long studentId = jwtUtil.getUserIdFromToken(auth.substring(7)).longValue();
+        appointmentService.bookSlots(studentId, dto);
+        return Map.of("message", "Appointment(s) successfully booked");
     }
 
     /* 学生查看自己的预约 */

@@ -1,5 +1,6 @@
 package com.tutorXpert.tutorxpert_backend.service;
 
+import com.tutorXpert.tutorxpert_backend.domain.dto.AvailableSlots.TutorTimeSlotDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorMapSearchResultDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.user.ProfileUpdateDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.tutor.TutorProfileSearchPageDTO;
@@ -31,6 +32,9 @@ public interface ITutorService {
     // 地图专用接口（地图搜索页用，返回专用 DTO）
     List<TutorMapSearchResultDTO> searchTutorsByMapBounds(double north, double south, double east, double west);
 
+    // 获取tutor信息
     TutorDetailDTO getTutorDetailById(Long tutorId);
 
+    // 获取Tutor可用slots
+    List<TutorTimeSlotDTO> getTutorTimeSlots(Long tutorId);
 }

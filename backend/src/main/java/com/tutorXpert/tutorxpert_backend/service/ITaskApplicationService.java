@@ -44,4 +44,6 @@ public interface ITaskApplicationService {
      * @return 申请详情
      */
     TaskApplication getApplicationById(Long id);
+
+
 }

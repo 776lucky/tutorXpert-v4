@@ -3,6 +3,7 @@ package com.tutorXpert.tutorxpert_backend.service;
 import com.tutorXpert.tutorxpert_backend.domain.dto.appointment.AppointmentCreateDTO;
 import com.tutorXpert.tutorxpert_backend.domain.dto.appointment.AppointmentDTO;
 import com.tutorXpert.tutorxpert_backend.domain.po.Appointment;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -19,4 +20,6 @@ public interface IAppointmentService {
 
     /** Tutor 接受或拒绝预约 */
     AppointmentDTO updateStatus(Long tutorId, Long appointmentId, String action); // action = "accept"|"reject"
+
+    void bookSlots(Long studentId, AppointmentCreateDTO dto);
 }
