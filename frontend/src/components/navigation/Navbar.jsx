@@ -44,7 +44,7 @@ const Navbar = () => {
     { name: "About Us", path: "/about" },
     { name: "Contact", path: "/contact" },
     { name: "Pricing", path: "/pricing" },
-    { name: "Browse Tasks", path: "/projects" },
+    { name: "Browse Tasks", path: "/tasks" },
     { name: "Become a Tutor", path: "/signup?tutor=true" }
   ];
 
