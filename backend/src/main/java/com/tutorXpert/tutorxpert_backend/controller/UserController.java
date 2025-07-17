@@ -19,6 +19,7 @@ import com.tutorXpert.tutorxpert_backend.mapper.UserMapper;
 import com.tutorXpert.tutorxpert_backend.security.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -79,45 +80,102 @@ public class UserController {
         }).toList();
     }
 
-    @Operation(
-            summary = "获取我的个人资料",
-            description = """
-                  获取当前登录用户的个人资料。返回公共账户信息，以及根据用户角色返回家教或学生的专属资料。
-                  需在请求头中携带 Authorization Token。
-                  """,
-            security = { @SecurityRequirement(name = "bearerAuth") }
-    )
-
-
-    @GetMapping("/profile")
-    public MyProfileDTO getMyProfile() {
+    @Operation(summary = "获取我的个人资料（Tutor）", security = { @SecurityRequirement(name = "bearerAuth") })
+    @GetMapping("/profile/tutor")
+    public TutorProfileUpdateDTO getMyTutorProfile() {
         String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (email == null) {
-            throw new RuntimeException("Invalid token");
-        }
-
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("email", email));
-        if (user == null) {
-            throw new RuntimeException("User not found");
+        if (user == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
+        if (!"tutor".equals(user.getRole())) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not a tutor");
+
+        Tutor tutor = tutorMapper.selectOne(new QueryWrapper<Tutor>().eq("user_id", user.getId()));
+
+        TutorProfileUpdateDTO dto = new TutorProfileUpdateDTO();
+        // 填充 User 字段
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
+        dto.setAddress(user.getAddress());
+        dto.setAvatarUrl(user.getAvatarUrl());
+
+        // 填充 Tutor 字段
+        if (tutor != null) {
+            dto.setBio(tutor.getBio());
+            dto.setExpertise(tutor.getExpertise());
+            dto.setHourlyRate(tutor.getHourlyRate());
+            dto.setYearsOfExperience(tutor.getYearsOfExperience());
+            dto.setCertifications(tutor.getCertifications());
+            dto.setTeachingModes(tutor.getTeachingModes());
+            dto.setTags(tutor.getTags());
         }
 
-        MyProfileDTO profileDTO = new MyProfileDTO();
-
-        UserLoginDTO userDTO = new UserLoginDTO();
-        BeanUtils.copyProperties(user, userDTO);
-        profileDTO.setUser(userDTO);
-
-        if ("tutor".equals(user.getRole())) {
-            Tutor tutor = tutorMapper.selectOne(new QueryWrapper<Tutor>().eq("user_id", user.getId()));
-            profileDTO.setRoleProfile(tutor);
-        } else if ("student".equals(user.getRole())) {
-            Student student = studentMapper.selectOne(new QueryWrapper<Student>().eq("user_id", user.getId()));
-            profileDTO.setRoleProfile(student);
-        }
-
-        return profileDTO;
+        return dto;
     }
 
+
+    @Operation(summary = "更新我的个人资料（Tutor）", security = { @SecurityRequirement(name = "bearerAuth") })
+    @PostMapping("/profile/tutor")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateMyTutorProfile(@RequestBody @Valid TutorProfileUpdateDTO dto) {
+        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("email", email));
+        if (user == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
+        if (!"tutor".equals(user.getRole())) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not a tutor");
+
+        // 更新 users 表
+        user.setName(dto.getName());
+        user.setAddress(dto.getAddress());
+        user.setAvatarUrl(dto.getAvatarUrl());
+        user.setPhoneNumber(dto.getEmail());
+        userMapper.updateById(user);
+
+        // 更新 tutors 表
+        Tutor tutor = tutorMapper.selectOne(new QueryWrapper<Tutor>().eq("user_id", user.getId()));
+        if (tutor == null) {
+            tutor = new Tutor();
+            tutor.setUserId(user.getId());
+        }
+        tutor.setBio(dto.getBio());
+        tutor.setExpertise(dto.getExpertise());
+        tutor.setHourlyRate(dto.getHourlyRate());
+        tutor.setYearsOfExperience(dto.getYearsOfExperience());
+        tutor.setCertifications(dto.getCertifications());
+        tutor.setTeachingModes(dto.getTeachingModes());
+        tutor.setTags(dto.getTags());
+
+        if (tutor.getId() == null) {
+            tutorMapper.insert(tutor);
+        } else {
+            tutorMapper.updateById(tutor);
+        }
+    }
+
+
+//
+//    @Operation(summary = "获取我的个人资料（Student）", security = { @SecurityRequirement(name = "bearerAuth") })
+//    @GetMapping("/profile/student")
+//    public StudentProfileUpdateDTO getMyStudentProfile() {
+//        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        User user = userMapper.selectOne(new QueryWrapper<User>().eq("email", email));
+//        if (user == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
+//
+//        if (!"student".equals(user.getRole())) {
+//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not a student");
+//        }
+//
+//        Student student = studentMapper.selectOne(new QueryWrapper<Student>().eq("user_id", user.getId()));
+//
+//        StudentProfileUpdateDTO dto = new StudentProfileUpdateDTO();
+//        dto.setEducationLevel(student.getEducationLevel());
+//        dto.setSubjectsNeeded(student.getSubjectsNeeded());
+//        dto.setDescription(student.getDescription());
+//
+//        dto.setName(user.getName());
+//        dto.setEmail(user.getEmail());
+//        dto.setAddress(user.getAddress());
+//
+//        return dto;
+//    }
+//
 
 
 

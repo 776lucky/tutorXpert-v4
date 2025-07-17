@@ -8,8 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @TableName("users")
 public class User {
     @TableId(type = IdType.AUTO)
@@ -21,5 +19,7 @@ public class User {
     private String address;
     private Double lat;
     private Double lng;
+    private String avatarUrl;     // 用户头像 URL
+    private String phoneNumber;
 }
 

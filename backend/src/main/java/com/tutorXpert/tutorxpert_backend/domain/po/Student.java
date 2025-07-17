@@ -8,8 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @TableName("students")
 public class Student {
     @TableId(type = IdType.AUTO)
@@ -17,9 +15,6 @@ public class Student {
     private Long userId;               // 外键关联 users.id
     private String educationLevel;     // 教育水平
     private String addressArea;        // 地址区域（模糊地址）
-    private String briefDescription;   // 简要描述（选填）
-
-    public void setSubjectNeed(String subjectNeed) {
-
-    }
+    private String briefDescription;   // 简要描述（选填）x`
+    private String subjectNeed;     // 所需科目（你已有 setter，但字段未定义）
 }

@@ -216,15 +216,6 @@ const ProfilePage = () => {
           </select>
         </div>
 
-        <div>
-          <label className="block mb-1 font-medium">Phone Number</label>
-          <Input
-              name="phone_number"
-              value={formData.phone_number || ""}
-              onChange={handleChange}
-              className="text-white"
-          />
-        </div>
 
         <div>
           <label className="block mb-1 font-medium">Address</label>

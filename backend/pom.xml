@@ -39,6 +39,12 @@
 		</dependency>
 
 
+		<dependency>
+			<groupId>jakarta.validation</groupId>
+			<artifactId>jakarta.validation-api</artifactId>
+		</dependency>
+
+
 		<!-- MyBatis-Plus Spring Boot 3 专用启动器 -->
 		<dependency>
 			<groupId>com.baomidou</groupId>

@@ -52,6 +52,7 @@ const TasksPage = () => {
   const fetchTasksByBounds = async (bounds) => {
     setIsLoading(true);
     console.log("Fetching tasks with bounds:", bounds);
+
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/tasks/search`, {
         params: {
@@ -62,22 +63,23 @@ const TasksPage = () => {
         },
       });
 
+      console.log("后端原始数据：", res.data);
+
       const dbTasks = res.data.map(task => ({
         id: String(task.id),
         title: task.title || "Untitled Task",
         subject: task.subject || "Unknown",
-        address: task.address || "No address",
-        lat: task.lat || 0,
-        lng: task.lng || 0,
         description: task.description || "No description",
+        address: task.address || "No address",
+        lat: task.lat ?? 0,
+        lng: task.lng ?? 0,
         budget: task.budget !== null ? task.budget : "N/A",
         status: task.status || "Unknown",
-        createdAt: task.created_at ? format(new Date(task.created_at), "yyyy-MM-dd") : "N/A",
+        createdAt: task.createdAt ? format(new Date(task.createdAt), "yyyy-MM-dd") : "N/A",
         deadline: task.deadline ? format(new Date(task.deadline), "yyyy-MM-dd") : "N/A",
-        userId: task.user_id || "Unknown",
+        userId: task.userId || "Unknown",
       }));
 
-      console.log("Fetched tasks from database:", dbTasks);
       setTasks(dbTasks);
       setFilteredTasks(dbTasks);
     } catch (error) {
@@ -86,6 +88,7 @@ const TasksPage = () => {
       setIsLoading(false);
     }
   };
+
 
   const debouncedFetchTasksByBounds = debounce((bounds) => {
     setDistanceFilter("");

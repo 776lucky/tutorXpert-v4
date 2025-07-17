@@ -9,11 +9,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @TableName("tasks")
 public class Task {
 
@@ -33,7 +32,7 @@ public class Task {
     private String address;
     private Double lat;
     private Double lng;
-    private String budget;
+    private Integer budget;
     private LocalDateTime deadline;
     private String status;
     private LocalDateTime createdAt;
