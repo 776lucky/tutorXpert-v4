@@ -34,7 +34,12 @@ const DashboardPage = () => {
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
   };
 
-  const user = JSON.parse(localStorage.getItem("user")) || { firstName: "User", role: "student" };
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const profilePath =
+      user.role === "tutor"
+          ? "/dashboard/profile/tutor"
+          : "/dashboard/profile/student";
+
   const isTutor = user.role === "tutor";
 
   const studentQuickLinks = [
@@ -67,6 +72,31 @@ const DashboardPage = () => {
     { label: "Upcoming Appointments", value: user.upcomingAppointments || 4, icon: CalendarDays },
     { label: "Unread Messages", value: user.unreadMessages || 3, icon: Send },
   ];
+
+
+
+  const dashboardLinks = [
+    {
+      name: "Profile Settings",
+      path: isTutor
+          ? "/dashboard/profile/tutor"
+          : "/dashboard/profile/student",
+      icon: User,
+    },
+    {
+      name: "Account Security",
+      path: "/dashboard/security",
+      icon: Settings,
+    },
+    {
+      name: "Notification Preferences",
+      path: "/dashboard/notifications",
+      icon: Send,
+    },
+  ];
+
+
+
 
 
   return (
@@ -138,23 +168,19 @@ const DashboardPage = () => {
       <motion.section variants={fadeIn} initial="hidden" animate="visible" className="mt-10">
         <h2 className="text-2xl font-semibold text-primary mb-6">Manage Your Account</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            { name: "Profile Settings", path: "/dashboard/profile", icon: User },
-            { name: "Account Security", path: "/dashboard/security", icon: Settings },
-            { name: "Notification Preferences", path: "/dashboard/notifications", icon: Send },
-          ].map(item => (
-             <motion.div key={item.name} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+          {dashboardLinks.map(item => (
+              <motion.div key={item.name} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                 <Link to={item.path}>
-                    <Card className="glass-effect card-hover group transition-all duration-300 hover:border-secondary">
-                        <CardContent className="p-6 flex items-center">
-                            <div className="p-3 rounded-full bg-secondary/10 mr-4 group-hover:bg-secondary/20 transition-colors duration-300 tech-glow">
-                                <item.icon className="h-6 w-6 text-secondary group-hover:scale-110 transition-transform duration-300" />
-                            </div>
-                            <h3 className="text-md font-medium text-foreground group-hover:text-secondary transition-colors duration-300">{item.name}</h3>
-                        </CardContent>
-                    </Card>
+                  <Card className="glass-effect card-hover group transition-all duration-300 hover:border-secondary">
+                    <CardContent className="p-6 flex items-center">
+                      <div className="p-3 rounded-full bg-secondary/10 mr-4 group-hover:bg-secondary/20 transition-colors duration-300 tech-glow">
+                        <item.icon className="h-6 w-6 text-secondary group-hover:scale-110 transition-transform duration-300" />
+                      </div>
+                      <h3 className="text-md font-medium text-foreground group-hover:text-secondary transition-colors duration-300">{item.name}</h3>
+                    </CardContent>
+                  </Card>
                 </Link>
-             </motion.div>
+              </motion.div>
           ))}
         </div>
       </motion.section>

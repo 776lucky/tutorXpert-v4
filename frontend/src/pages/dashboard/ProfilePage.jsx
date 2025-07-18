@@ -23,6 +23,7 @@ const ProfilePage = () => {
   const isTutor = storedUser?.role === "tutor";
   const navigate = useNavigate();
 
+
   useEffect(() => {
     if (!storedUser?.id) {
       setFetchError("No user ID found in local storage");
@@ -38,46 +39,25 @@ const ProfilePage = () => {
         setIsLoading(false);
         return;
       }
-      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/profile`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/profile`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/profile/tutor`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
-        console.log(localStorage.getItem("token"));
-        console.log("Fetched profile:", res.data);  // ✅ 添加这行
+        console.log("Fetched profile:", res.data);
         setProfile(res.data);
       } catch (err) {
-        console.error("Failed to fetch profile", err);  // ✅ 查看控制台是否报错
+        console.error("Failed to fetch profile", err);
         setFetchError("Failed to load profile. Please try again later.");
       } finally {
         setIsLoading(false);
       }
     };
-    
 
     fetchProfile();
   }, [storedUser?.id]);
 
-  useEffect(() => {
-    if (profile) {
-      setFormData({ ...profile });
-    }
-  }, [profile]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-  
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "hourly_rate" ? Number(value) : value,
-    }));
-  };
 
   const handleSave = async () => {
     const auth = JSON.parse(localStorage.getItem("auth") || "{}");
@@ -252,12 +232,16 @@ const ProfilePage = () => {
                       renderTutorProfile()
                   ) : (
                       <div className="space-y-4">
-                        <div><strong>Bio:</strong> {profile.tutor.bio}</div>
-                        <div><strong>Expertise:</strong> {profile.tutor.expertise}</div>
-                        <div><strong>Hourly Rate:</strong> ${profile.tutor.hourlyRate}</div>
-                        <div><strong>Education Level:</strong> {profile.profile?.educationLevel || "—"}</div>
-                        <div><strong>Phone Number:</strong> {profile.profile?.phoneNumber || "—"}</div>
-                        <div><strong>Address:</strong> {profile.profile.address}</div>
+                        <div><strong>Name:</strong> {profile.name}</div>
+                        <div><strong>Email:</strong> {profile.email}</div>
+                        <div><strong>Bio:</strong> {profile.bio}</div>
+                        <div><strong>Expertise:</strong> {profile.expertise}</div>
+                        <div><strong>Hourly Rate:</strong> ${profile.hourlyRate}</div>
+                        <div><strong>Years of Experience:</strong> {profile.yearsOfExperience}</div>
+                        <div><strong>Certifications:</strong> {profile.certifications}</div>
+                        <div><strong>Teaching Modes:</strong> {profile.teachingModes}</div>
+                        <div><strong>Tags:</strong> {profile.tags}</div>
+                        <div><strong>Address:</strong> {profile.address}</div>
                       </div>
                   )}
 
@@ -268,8 +252,15 @@ const ProfilePage = () => {
                           <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
                         </>
                     ) : (
-                        <Button onClick={() => navigate("/dashboard/edit-profile")}>Edit Profile</Button>
-                    )}
+                        <Button onClick={() => {
+                          if (storedUser?.role === "tutor") {
+                            navigate("/dashboard/profile/tutor");
+                          } else if (storedUser?.role === "student") {
+                            navigate("/dashboard/profile/student");
+                          }
+                        }}>
+                          Edit Profile
+                        </Button>                    )}
                   </div>
                 </>
             )}

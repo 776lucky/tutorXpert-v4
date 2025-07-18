@@ -22,7 +22,8 @@ import MyMessagesPage from "@/pages/dashboard/MyMessagesPage";
 import MyBidsPage from "@/pages/dashboard/MyBidsPage";
 import MyListingsPage from "@/pages/dashboard/MyListingsPage";
 import MyAppointmentsPage from "@/pages/dashboard/MyAppointmentsPage";
-import EditProfilePage from "@/pages/dashboard/EditProfilePage.jsx";
+import EditTutorProfilePage from "@/pages/dashboard/EditTutorProfilePage";
+import EditStudentProfilePage from "@/pages/dashboard/EditStudentProfilePage"; // 你可能需要创建此组件
 
 // import PayPage from "@/pages/PayPage";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -69,10 +70,12 @@ const App = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/test-dialog" element={<TestDialog />} />
-            <Route path="/dashboard/edit-profile" element={<EditProfilePage />} />
+            {/*<Route path="/dashboard/edit-profile" element={<EditProfilePage />} />*/}
 
             {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard/profile/tutor" element={<EditTutorProfilePage />} />
+              <Route path="/dashboard/profile/student" element={<EditStudentProfilePage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/dashboard/favourites" element={<MyFavouritesPage />} />
               <Route path="/dashboard/messages" element={<MyMessagesPage />} />
