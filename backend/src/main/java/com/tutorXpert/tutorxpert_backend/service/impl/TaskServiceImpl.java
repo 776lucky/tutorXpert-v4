@@ -200,8 +200,8 @@ public class TaskServiceImpl implements ITaskService {
 
     /** 获取任务详情 */
     @Override
-    public TaskDTO getTaskById(Long taskId) {
-        Task task = taskMapper.selectById(taskId);
+    public TaskSearchDTO getTaskById(Long taskId) {
+        TaskSearchDTO task = taskMapper.selectById(taskId);
         if (task == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found");
         }

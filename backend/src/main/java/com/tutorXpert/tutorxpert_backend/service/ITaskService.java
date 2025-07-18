@@ -18,7 +18,7 @@ public interface ITaskService {
     void deleteTaskById(Long id);
 
     /** 获取任务详情 */
-    TaskDTO getTaskById(Long id);
+    TaskSearchDTO getTaskById(Long id);
 
     /** 修改任务状态 */
     TaskDTO updateTaskStatus(Long taskId, TaskStatusUpdateDTO task);

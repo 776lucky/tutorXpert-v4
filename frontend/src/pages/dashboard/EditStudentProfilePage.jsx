@@ -7,24 +7,23 @@ import { useToast } from "@/components/ui/use-toast";
 import AddressAutoComplete from "@/components/AddressAutoComplete";
 
 const EditStudentProfilePage = () => {
-    const [formData, setFormData] = useState({});
+    const [form, setForm] = useState({});
     const navigate = useNavigate();
     const { toast } = useToast();
 
     useEffect(() => {
-        axios
-            .get(`${import.meta.env.VITE_API_BASE_URL}/users/profile/student`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-            })
-            .then((res) => setFormData(res.data))
-            .catch((err) => console.error("Failed to fetch student profile", err));
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/profile/student`, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+        })
+            .then((res) => setForm(res.data))
+            .catch((err) => console.error("获取学生资料失败", err));
     }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({
+        setForm((prev) => ({
             ...prev,
             [name]: value,
         }));
@@ -32,70 +31,77 @@ const EditStudentProfilePage = () => {
 
     const handleSave = async () => {
         try {
-            await axios.post(
-                `${import.meta.env.VITE_API_BASE_URL}/users/profile/student`,
-                formData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`,
-                    },
-                }
-            );
-
+            await axios.post(`${import.meta.env.VITE_API_BASE_URL}/users/profile/student`, form, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
             toast({
-                title: "Update Success!",
+                title: "保存成功",
                 duration: 2000,
                 className: "bg-green-500 text-white",
             });
 
-            navigate("/dashboard/profile");
+            navigate(`/dashboard/profile`);
         } catch (err) {
-            console.error("保存失败:", err);
+            console.error("保存失败", err);
+            toast({
+                title: "保存失败",
+                description: "请稍后重试",
+                className: "bg-red-500 text-white",
+            });
         }
     };
 
     return (
-        <div className="p-6">
-            <h2 className="text-2xl mb-4">Edit Student Profile</h2>
-            <div className="space-y-4">
-                <Input
-                    name="name"
-                    value={formData.name || ""}
-                    onChange={handleChange}
-                    placeholder="name"
-                />
-                <Input
-                    name="email"
-                    value={formData.email || ""}
-                    disabled
-                    placeholder="email"
-                />
-                <Input
-                    name="educationLevel"
-                    value={formData.educationLevel || ""}
-                    onChange={handleChange}
-                    placeholder="educationLevel"
-                />
-                <Input
-                    name="subjectNeed"
-                    value={formData.subjectNeed || ""}
-                    onChange={handleChange}
-                    placeholder="subjectNeed"
-                />
-                <Input
-                    name="briefDescription"
-                    value={formData.briefDescription || ""}
-                    onChange={handleChange}
-                    placeholder="briefDescription"
-                />
-                <AddressAutoComplete form={formData} setForm={setFormData} />
+        <div className="max-w-2xl mx-auto py-6 space-y-5">
+            <h2 className="text-xl font-semibold">Edit Student Profile</h2>
 
-                <div className="flex gap-4">
-                    <Button onClick={handleSave}>Save</Button>
-                    <Button variant="outline" onClick={() => navigate("/dashboard/profile")}>
-                        Cancle
-                    </Button>
-                </div>
+            <div>
+                <label className="block mb-1">Name</label>
+                <Input name="name" value={form.name || ""} onChange={handleChange} placeholder="Enter name" />
+            </div>
+
+            <div>
+                <label className="block mb-1">Email</label>
+                <Input name="email" value={form.email || ""} disabled />
+            </div>
+
+            <div>
+                <label className="block mb-1">Bio</label>
+                <Input name="bio" value={form.bio || ""} onChange={handleChange} placeholder="Short introduction" />
+            </div>
+
+            <div>
+                <label className="block mb-1">Education Level</label>
+                <Input name="educationLevel" value={form.educationLevel || ""} onChange={handleChange} />
+            </div>
+
+            <div>
+                <label className="block mb-1">Subject Need</label>
+                <Input name="subjectNeed" value={form.subjectNeed || ""} onChange={handleChange} />
+            </div>
+
+            <div>
+                <label className="block mb-1">Brief Description</label>
+                <Input name="briefDescription" value={form.briefDescription || ""} onChange={handleChange} />
+            </div>
+
+            <div>
+                <label className="block mb-1">Address Area</label>
+                <Input name="addressArea" value={form.addressArea || ""} onChange={handleChange} />
+            </div>
+
+            <div>
+                <label className="block mb-1">Avatar URL</label>
+                <Input name="avatarUrl" value={form.avatarUrl || ""} onChange={handleChange} />
+            </div>
+
+            <AddressAutoComplete form={form} setForm={setForm} />
+
+            <div className="flex gap-4 pt-2">
+                <Button onClick={handleSave}>Save</Button>
+                <Button variant="outline" onClick={() => navigate("/dashboard/profile")}>Cancel</Button>
             </div>
         </div>
     );

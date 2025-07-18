@@ -110,7 +110,7 @@ public class TaskController {
 
     @Operation(summary = "Get task details")
     @GetMapping("/{task_id}")
-    public TaskDTO getTaskById(@PathVariable("task_id") Long taskId) {
+    public TaskSearchDTO getTaskById(@PathVariable("task_id") Long taskId) {
         return taskService.getTaskById(taskId);
     }
 
@@ -162,6 +162,7 @@ public class TaskController {
     public List<TaskApplicationDTO> getApplications(@PathVariable("task_id") Long taskId) {
         return taskService.getApplicationsByTaskId(taskId);
     }
+
 
 
 

@@ -150,32 +150,70 @@ public class UserController {
     }
 
 
-//
-//    @Operation(summary = "获取我的个人资料（Student）", security = { @SecurityRequirement(name = "bearerAuth") })
-//    @GetMapping("/profile/student")
-//    public StudentProfileUpdateDTO getMyStudentProfile() {
-//        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        User user = userMapper.selectOne(new QueryWrapper<User>().eq("email", email));
-//        if (user == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
-//
-//        if (!"student".equals(user.getRole())) {
-//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not a student");
-//        }
-//
-//        Student student = studentMapper.selectOne(new QueryWrapper<Student>().eq("user_id", user.getId()));
-//
-//        StudentProfileUpdateDTO dto = new StudentProfileUpdateDTO();
-//        dto.setEducationLevel(student.getEducationLevel());
-//        dto.setSubjectsNeeded(student.getSubjectsNeeded());
-//        dto.setDescription(student.getDescription());
-//
-//        dto.setName(user.getName());
-//        dto.setEmail(user.getEmail());
-//        dto.setAddress(user.getAddress());
-//
-//        return dto;
-//    }
-//
+    @Operation(summary = "获取我的个人资料（Student）", security = { @SecurityRequirement(name = "bearerAuth") })
+    @GetMapping("/profile/student")
+    public StudentProfileUpdateDTO getMyStudentProfile() {
+        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("email", email));
+        if (user == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
+
+        if (!"student".equals(user.getRole())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not a student");
+        }
+
+        Student student = studentMapper.selectOne(new QueryWrapper<Student>().eq("user_id", user.getId()));
+        if (student == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student profile not found");
+        }
+
+        StudentProfileUpdateDTO dto = new StudentProfileUpdateDTO();
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
+        dto.setAvatarUrl(user.getAvatarUrl());
+        dto.setAddress(user.getAddress());
+
+        dto.setEducationLevel(student.getEducationLevel());
+        dto.setSubjectNeed(student.getSubjectNeed());
+        dto.setAddressArea(student.getAddressArea());
+        dto.setBriefDescription(student.getBriefDescription());
+
+        return dto;
+    }
+
+    @Operation(summary = "更新我的个人资料（Student）", security = { @SecurityRequirement(name = "bearerAuth") })
+    @PostMapping("/profile/student")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateMyStudentProfile(@RequestBody @Valid StudentProfileUpdateDTO dto) {
+        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("email", email));
+        if (user == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
+        if (!"student".equals(user.getRole())) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not a student");
+
+        // 更新 users 表
+        user.setName(dto.getName());
+        user.setAddress(dto.getAddress());
+        user.setAvatarUrl(dto.getAvatarUrl());
+        userMapper.updateById(user);
+
+        // 更新 students 表
+        Student student = studentMapper.selectOne(new QueryWrapper<Student>().eq("user_id", user.getId()));
+        if (student == null) {
+            student = new Student();
+            student.setUserId(user.getId());
+        }
+
+        student.setEducationLevel(dto.getEducationLevel());
+        student.setSubjectNeed(dto.getSubjectNeed());
+        student.setAddressArea(dto.getAddressArea());
+        student.setBriefDescription(dto.getBriefDescription());
+
+        if (student.getId() == null) {
+            studentMapper.insert(student);
+        } else {
+            studentMapper.updateById(student);
+        }
+    }
+
 
 
 
